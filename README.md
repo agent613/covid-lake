@@ -1,14 +1,15 @@
-# Welcome to your CDK TypeScript project!
+# Template for Generating a Data Lake for analysis of COVID-19 related data sets
 
-This is a blank project for TypeScript development with CDK.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+## To generate your data lake:
 
-## Useful commands
+As a prerequisite, you should have already installed and configured [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html), cloned this repository and have your shell at the root of the project.
 
- * `npm run build`   compile typescript to js
- * `npm run watch`   watch for changes and compile
- * `npm run test`    perform the jest unit tests
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk synth`       emits the synthesized CloudFormation template
+
+ * `npm install -g aws-cdk` will install the AWS CDK
+ * `npm install` will fetch all the required packages
+ * `npm run all`   will compile and deploy your app to the default account and region specified in your AWS CLI profile
+
+ You can check that is successful by visiting the [AWS Glue Console](https://console.aws.amazon.com/glue/home).  You should see a database called "covid" and a crawler called "covid-crawler" which is configured to run every hour.  
+
+ Once the crawler runs the first time, your lake should be created and you should be able to see and query the resulting tables in [Amazon Athena](https://console.aws.amazon.com/athena/home).
