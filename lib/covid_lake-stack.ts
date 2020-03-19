@@ -25,7 +25,7 @@ export class CovidLakeStack extends cdk.Stack {
       databaseName: dbName,
       role: role.roleArn,
       targets: {
-        s3Targets: [{path:'s3://covid19-lake/transposed'}, {path:'s3://covid19-lake/raw/jhu/csse_covid_19_daily_reports/latest'}]
+        s3Targets: [{path:'s3://covid19-lake/jhu/jhu_time_series'}, {path:'s3://covid19-lake/jhu/jhu_consolidated'}]
       },
       schedule: {scheduleExpression: 'cron(5 * * * ? *)'}
     });
