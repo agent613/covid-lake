@@ -157,9 +157,106 @@ export class CovidLakeStack extends cdk.Stack {
       }
     });
 
+    const allen_metadata_table = new glue.CfnTable(this, 'alleninstitute_metadata', {
+      databaseName: db.databaseName,
+      catalogId: this.account,
+      tableInput: {
+        description: "Metadata on papers pulled from the Allen Institute.  The 'sha' column indicates the paper id",
+        name: "alleninstitute_metadata",
+        parameters: {
+          has_encrypted_data: false,
+          classification: "csv", 
+          areColumnsQuoted: "false", 
+          typeOfData: "file", 
+          columnsOrdered: "true", 
+          delimiter: ",", 
+          "skip.header.line.count": "1"
+        },
+        storageDescriptor: {
+          columns: [
+            {
+              type: "string", 
+              name: "sha",
+              comment: "the paper id.  this represents the file name of the json file on s3 where the details are stored"
+          }, 
+          {
+              type: "string", 
+              name: "source_x",
+              comment: "the data source, currently: PMC, biorxiv, CZI, or medrxiv"
+          }, 
+          {
+              type: "string", 
+              name: "title",
+              comment: "the title of the paper"
+          }, 
+          {
+              type: "string", 
+              name: "doi"
+          }, 
+          {
+              type: "string", 
+              name: "pmcid"
+          }, 
+          {
+              type: "bigint", 
+              name: "pubmed_id"
+          }, 
+          {
+              type: "string", 
+              name: "license"
+          }, 
+          {
+              type: "string", 
+              name: "abstract",
+              comment: "abstract of the paper"
+          }, 
+          {
+              type: "bigint", 
+              name: "publish_time",
+              comment: "when the paper was published"
+          }, 
+          {
+              type: "string", 
+              name: "authors"
+          }, 
+          {
+              type: "string", 
+              name: "journal"
+          }, 
+          {
+              type: "bigint", 
+              name: "microsoft academic paper id"
+          }, 
+          {
+              type: "string", 
+              name: "who #covidence"
+          }, 
+          {
+              type: "boolean", 
+              name: "has_full_text", 
+              comment: "whether the full text of the paper is available"
+          }
+
+          ],
+          compressed: false,
+          inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
+          location: "s3://covid19-lake/jhu/jhu_consolidated",
+          outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
+          serdeInfo: {
+            serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
+            parameters: {
+                  "field.delim": ","
+              }
+          },
+          storedAsSubDirectories: false
+        },
+        tableType: "EXTERNAL_TABLE"
+      }
+    });
+
     
-    new glue.CfnCrawler(this, 'crawler', {
-      name: 'covid-crawler',
+    new glue.CfnCrawler(this, 'jhu-crawler', {
+      name: 'covid-jhu-crawler',
       databaseName: dbName,
       role: role.roleArn,
       targets: {
@@ -171,5 +268,30 @@ export class CovidLakeStack extends cdk.Stack {
       configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}"
     });
 
+    new glue.CfnCrawler(this, 'allen-metadata-crawler', {
+      name: 'covid-alleninstitute-metadata-crawler',
+      databaseName: dbName,
+      role: role.roleArn,
+      targets: {
+        //s3Targets: [{path:'s3://covid19-lake/alleninstitute/CORD19/raw/metadata'}]
+        catalogTargets: [{databaseName: db.databaseName, tables: ['alleninstitute_metadata']}]
+      },
+      schedule: {scheduleExpression: 'cron(5 * * * ? *)'},
+      schemaChangePolicy: {deleteBehavior: "LOG"},
+      configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}"
+    });
+
+    /*new glue.CfnCrawler(this, 'allen-pmc-crawler', {
+      name: 'covid-alleninstitute-pmc-crawler',
+      databaseName: dbName,
+      role: role.roleArn,
+      targets: {
+        s3Targets: [{path:'s3://covid19-lake/alleninstitute/CORD19/raw/pmc_custom_license'}]
+        //catalogTargets: [{databaseName: db.databaseName, tables: ['jhu_time_series', "jhu_consolidated"]}]
+      },
+      schedule: {scheduleExpression: 'cron(5 * * * ? *)'},
+      schemaChangePolicy: {deleteBehavior: "LOG"},
+      configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}"
+    });*/
   }
 }
