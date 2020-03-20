@@ -254,6 +254,148 @@ export class CovidLakeStack extends cdk.Stack {
       }
     });
 
+    const covidtracking_states_table = new glue.CfnTable(this, 'covidtracking_states', {
+      databaseName: db.databaseName,
+      catalogId: this.account,
+      tableInput: {
+        name: "covidtracking_states",
+        description: "Data on COVID-19 testing per state fron covidtracking.com",
+        parameters: {
+          has_encrypted_data: false,
+          classification: "csv", 
+          areColumnsQuoted: "false", 
+          typeOfData: "file", 
+          columnsOrdered: "true", 
+          delimiter: ",", 
+          "skip.header.line.count": "1"
+        },
+        storageDescriptor: {
+          columns: [
+          {
+              type: "string", 
+              name: "state"
+          }, 
+          {
+              type: "bigint", 
+              name: "positive",
+              comment: "positive results"
+          }, 
+          {
+            type: "bigint", 
+            name: "negative",
+            comment: "negative results"
+          }, 
+          {
+            type: "bigint", 
+            name: "pending",
+            comment: "pending results"
+          },
+          {
+            type: "bigint", 
+            name: "death",
+            comment: "number of deaths"
+          },
+          {
+            type: "bigint", 
+            name: "total",
+            comment: "total results"
+          },
+          {
+            type: "string", 
+            name: "lastUpdateEt"
+          }, 
+          {
+            type: "string", 
+            name: "checkTimeEt"
+          }, 
+          {
+            type: "string", 
+            name: "dateModified"
+          }, 
+          {
+            type: "string", 
+            name: "dateChecked"
+          }, 
+
+          ],
+          compressed: false,
+          inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
+          location: "s3://covid19-lake/covidtracking.com/states",
+          outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
+          serdeInfo: {
+            serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
+            parameters: {
+                  "field.delim": ","
+              }
+          },
+          storedAsSubDirectories: false
+        },
+        tableType: "EXTERNAL_TABLE"
+      }
+    });
+
+    const covidtracking_counties_table = new glue.CfnTable(this, 'covidtracking_counties', {
+      databaseName: db.databaseName,
+      catalogId: this.account,
+      tableInput: {
+        name: "covidtracking_counties",
+        description: "Data on COVID-19 testing per county fron covidtracking.com",
+        parameters: {
+          has_encrypted_data: false,
+          classification: "csv", 
+          areColumnsQuoted: "false", 
+          typeOfData: "file", 
+          columnsOrdered: "true", 
+          delimiter: ",", 
+          "skip.header.line.count": "1"
+        },
+        storageDescriptor: {
+          columns: [
+          {
+              type: "string", 
+              name: "state"
+          }, 
+          {
+            type: "string", 
+            name: "county"
+          }, 
+          {
+            type: "string", 
+            name: "covid19Site"
+          }, 
+          {
+            type: "string", 
+            name: "dataSite"
+          },
+          {
+            type: "string", 
+            name: "mainSite"
+          },
+          {
+            type: "string", 
+            name: "twitter"
+          },
+          {
+            type: "string", 
+            name: "pui"
+          },
+          ],
+          compressed: false,
+          inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
+          location: "s3://covid19-lake/covidtracking.com/counties",
+          outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
+          serdeInfo: {
+            serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
+            parameters: {
+                  "field.delim": ","
+              }
+          },
+          storedAsSubDirectories: false
+        },
+        tableType: "EXTERNAL_TABLE"
+      }
+    });
+
     
     new glue.CfnCrawler(this, 'jhu-crawler', {
       name: 'covid-jhu-crawler',
@@ -281,12 +423,13 @@ export class CovidLakeStack extends cdk.Stack {
       configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}"
     });
 
-    /*new glue.CfnCrawler(this, 'allen-pmc-crawler', {
-      name: 'covid-alleninstitute-pmc-crawler',
+    /*
+    new glue.CfnCrawler(this, 'covid-covidtracking-crawler', {
+      name: 'covid-covidtracking-crawler',
       databaseName: dbName,
       role: role.roleArn,
       targets: {
-        s3Targets: [{path:'s3://covid19-lake/alleninstitute/CORD19/raw/pmc_custom_license'}]
+        s3Targets: [{path:'s3://covid19-lake/covidtracking.com'}]
         //catalogTargets: [{databaseName: db.databaseName, tables: ['jhu_time_series', "jhu_consolidated"]}]
       },
       schedule: {scheduleExpression: 'cron(5 * * * ? *)'},
