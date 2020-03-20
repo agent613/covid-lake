@@ -10,6 +10,6 @@ As a prerequisite, you should have already installed and configured [AWS CLI](ht
  * `npm install` will fetch all the required packages
  * `npm run all`   will compile and deploy your app to the default account and region specified in your AWS CLI profile
 
- You can check that is successful by visiting the [AWS Glue Console](https://console.aws.amazon.com/glue/home).  You should see a database called "covid" and a crawler called "covid-crawler" which is configured to run every hour.  
+ You can check that is successful by visiting the [AWS Glue Console](https://console.aws.amazon.com/glue/home).  You should see a database called "covid" with some tables in it and a crawler called "covid-crawler" which is configured to run every hour.  
 
- Once the crawler runs the first time, your lake should be created and you should be able to see and query the resulting tables in [Amazon Athena](https://console.aws.amazon.com/athena/home).
+You should now be able to see and query the resulting tables in [Amazon Athena](https://console.aws.amazon.com/athena/home).
