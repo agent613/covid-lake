@@ -7,11 +7,14 @@ export class CovidLakeStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+     // #region Database
     const dbName = 'covid';
     const db = new glue.Database(this, dbName, {
       databaseName: dbName
     });
+    // #endregion
 
+    // #region IAM Role 
     const role = new iam.Role(this, 'glueRole', {
       assumedBy: new iam.ServicePrincipal('glue.amazonaws.com'),
       managedPolicies: [
@@ -19,8 +22,10 @@ export class CovidLakeStack extends cdk.Stack {
         iam.ManagedPolicy.fromManagedPolicyArn(this, 's3access', 'arn:aws:iam::aws:policy/AmazonS3FullAccess')
       ]
     });
+    // #endregion
 
 
+    // #region JHU
     const jhu_ts_table = new glue.CfnTable(this, 'jhu_time_series', {
       databaseName: db.databaseName,
       catalogId: this.account,
@@ -90,6 +95,8 @@ export class CovidLakeStack extends cdk.Stack {
         }
     }); 
 
+    //new CfnWaitCondition(this, 'wait_jhu_ts_table', {}).addDependsOn(jhu_ts_table);
+
     new glue.CfnPartition(this, 'jhu_time_series_recovered', {
       databaseName: db.databaseName,
       catalogId: this.account,
@@ -157,7 +164,7 @@ export class CovidLakeStack extends cdk.Stack {
       parameters: {}, 
       values: ["recovered"]
     }
-    });
+    }).addDependsOn(jhu_ts_table);
     new glue.CfnPartition(this, 'jhu_time_series_confirmed', {
       databaseName: db.databaseName,
       catalogId: this.account,
@@ -225,7 +232,7 @@ export class CovidLakeStack extends cdk.Stack {
       parameters: {}, 
       values: ["confirmed"]
     }
-    });
+    }).addDependsOn(jhu_ts_table);
     new glue.CfnPartition(this, 'jhu_time_series_deaths', {
       databaseName: db.databaseName,
       catalogId: this.account,
@@ -293,7 +300,7 @@ export class CovidLakeStack extends cdk.Stack {
       parameters: {}, 
       values: ["death"]
     }
-    });
+    }).addDependsOn(jhu_ts_table);
 
 
     const jhu_cons_table = new glue.CfnTable(this, 'jhu_consolidated', {
@@ -374,7 +381,9 @@ export class CovidLakeStack extends cdk.Stack {
         tableType: "EXTERNAL_TABLE"
       }
     });
+    // #region
 
+    // #region allen
     const allen_metadata_table = new glue.CfnTable(this, 'alleninstitute_metadata', {
       databaseName: db.databaseName,
       catalogId: this.account,
@@ -524,6 +533,7 @@ export class CovidLakeStack extends cdk.Stack {
         tableType: "EXTERNAL_TABLE"
       }
     });
+    // #region
 
     const covidtracking_states_table = new glue.CfnTable(this, 'covidtracking_states', {
       databaseName: db.databaseName,
@@ -668,6 +678,7 @@ export class CovidLakeStack extends cdk.Stack {
     });
 
     
+    /* 
     new glue.CfnCrawler(this, 'jhu-crawler', {
       name: 'covid-jhu-crawler',
       databaseName: dbName,
@@ -694,7 +705,7 @@ export class CovidLakeStack extends cdk.Stack {
       configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}"
     });
 
-    /*
+    
     new glue.CfnCrawler(this, 'covid-covidtracking-crawler', {
       name: 'covid-covidtracking-crawler',
       databaseName: dbName,
@@ -706,6 +717,7 @@ export class CovidLakeStack extends cdk.Stack {
       schedule: {scheduleExpression: 'cron(5 * * * ? *)'},
       schemaChangePolicy: {deleteBehavior: "LOG"},
       configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}"
-    });*/
+    });
+    */
   }
 }
