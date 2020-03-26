@@ -18,297 +18,20 @@ export class CovidLakeStack extends cdk.Stack {
     const role = new iam.Role(this, 'glueRole', {
       assumedBy: new iam.ServicePrincipal('glue.amazonaws.com'),
       managedPolicies: [
-        iam.ManagedPolicy.fromManagedPolicyArn(this, 'glueServiceRole', 'arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole'),
-        iam.ManagedPolicy.fromManagedPolicyArn(this, 's3access', 'arn:aws:iam::aws:policy/AmazonS3FullAccess')
+        iam.ManagedPolicy.fromManagedPolicyArn(this, 'glueServiceRole', 'arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole')/*,
+        iam.ManagedPolicy.fromManagedPolicyArn(this, 's3access', 'arn:aws:iam::aws:policy/AmazonS3FullAccess')*/
       ]
     });
     // #endregion
 
 
-    // #region JHU
-    const jhu_ts_table = new glue.CfnTable(this, 'jhu_time_series', {
-      databaseName: db.databaseName,
-      catalogId: this.account,
-      tableInput: {
-          description: "Johns Hopkins University Time Series data on COVID-19 cases",
-          name: "jhu_time_series",
-          parameters: {
-            has_encrypted_data: false,
-            classification: "csv", 
-            areColumnsQuoted: "false", 
-            typeOfData: "file", 
-            columnsOrdered: "true", 
-            delimiter: ",", 
-            "skip.header.line.count": "1"
-          },
-          storageDescriptor: {
-            columns: [
-              {
-                name: "province/state",
-                type: "string"
-              },
-              {
-                name: "country/region",
-                type: "string"
-              },
-              {
-                name: "lat",
-                type: "double",
-                comment: "location (latitude)"
-              },
-              {
-                name: "long",
-                type: "double",
-                comment: "location (longitude)"
-              },
-              {
-                name: "date",
-                type: "string",
-                comment: "reporting date"
-              },
-              {
-                name: "value",
-                type: "double",
-                comment: "number of cases"
-              }
-            ],
-            compressed: false,
-            inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
-            location: "s3://covid19-lake/jhu/jhu_time_series/",
-            outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
-            serdeInfo: {
-              serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
-              parameters: {
-                    "field.delim": ","
-                }
-            },
-            storedAsSubDirectories: false
-          },
-          partitionKeys: [
-            {
-                type: "string", 
-                name: "status",
-                comment: "status of the cases: confirmed, recovered or death"
-            }
-          ],
-          tableType: "EXTERNAL_TABLE"
-        }
-    }); 
-
-    //new CfnWaitCondition(this, 'wait_jhu_ts_table', {}).addDependsOn(jhu_ts_table);
-
-    new glue.CfnPartition(this, 'jhu_time_series_recovered', {
-      databaseName: db.databaseName,
-      catalogId: this.account,
-      tableName: "jhu_time_series",
-      partitionInput: {
-        storageDescriptor: {
-          outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat", 
-          sortColumns: [], 
-          inputFormat: "org.apache.hadoop.mapred.TextInputFormat", 
-          serdeInfo: {
-              serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
-              parameters: {
-                  "field.delim": ","
-              }
-          }, 
-          bucketColumns: [], 
-          parameters: {
-              "compressionType": "none", 
-              "classification": "csv", 
-              "recordCount": "38129", 
-              "typeOfData": "file", 
-              "areColumnsQuoted": "false", 
-              "columnsOrdered": "true", 
-              "objectCount": "1", 
-              "delimiter": ",", 
-              "skip.header.line.count": "1", 
-              "averageRecordSize": "36", 
-              "sizeKey": "1372652"
-          }, 
-          location: "s3://covid19-lake/jhu/jhu_time_series/status=recovered/", 
-          numberOfBuckets: -1, 
-          storedAsSubDirectories: false, 
-          columns: [
-            {
-              name: "province/state",
-              type: "string"
-            },
-            {
-              name: "country/region",
-              type: "string"
-            },
-            {
-              name: "lat",
-              type: "double",
-              comment: "location (latitude)"
-            },
-            {
-              name: "long",
-              type: "double",
-              comment: "location (longitude)"
-            },
-            {
-              name: "date",
-              type: "string",
-              comment: "reporting date"
-            },
-            {
-              name: "value",
-              type: "double",
-              comment: "number of cases"
-            }
-          ],
-          compressed: false
-      }, 
-      parameters: {}, 
-      values: ["recovered"]
-    }
-    }).addDependsOn(jhu_ts_table);
-    new glue.CfnPartition(this, 'jhu_time_series_confirmed', {
-      databaseName: db.databaseName,
-      catalogId: this.account,
-      tableName: "jhu_time_series",
-      partitionInput: {
-        storageDescriptor: {
-          outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat", 
-          sortColumns: [], 
-          inputFormat: "org.apache.hadoop.mapred.TextInputFormat", 
-          serdeInfo: {
-              serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
-              parameters: {
-                  "field.delim": ","
-              }
-          }, 
-          bucketColumns: [], 
-          parameters: {
-              "compressionType": "none", 
-              "classification": "csv", 
-              "recordCount": "38129", 
-              "typeOfData": "file", 
-              "areColumnsQuoted": "false", 
-              "columnsOrdered": "true", 
-              "objectCount": "1", 
-              "delimiter": ",", 
-              "skip.header.line.count": "1", 
-              "averageRecordSize": "36", 
-              "sizeKey": "1372652"
-          }, 
-          location: "s3://covid19-lake/jhu/jhu_time_series/status=confirmed/", 
-          numberOfBuckets: -1, 
-          storedAsSubDirectories: false, 
-          columns: [
-            {
-              name: "province/state",
-              type: "string"
-            },
-            {
-              name: "country/region",
-              type: "string"
-            },
-            {
-              name: "lat",
-              type: "double",
-              comment: "location (latitude)"
-            },
-            {
-              name: "long",
-              type: "double",
-              comment: "location (longitude)"
-            },
-            {
-              name: "date",
-              type: "string",
-              comment: "reporting date"
-            },
-            {
-              name: "value",
-              type: "double",
-              comment: "number of cases"
-            }
-          ],
-          compressed: false
-      }, 
-      parameters: {}, 
-      values: ["confirmed"]
-    }
-    }).addDependsOn(jhu_ts_table);
-    new glue.CfnPartition(this, 'jhu_time_series_deaths', {
-      databaseName: db.databaseName,
-      catalogId: this.account,
-      tableName: "jhu_time_series",
-      partitionInput: {
-        storageDescriptor: {
-          outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat", 
-          sortColumns: [], 
-          inputFormat: "org.apache.hadoop.mapred.TextInputFormat", 
-          serdeInfo: {
-              serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
-              parameters: {
-                  "field.delim": ","
-              }
-          }, 
-          bucketColumns: [], 
-          parameters: {
-              "compressionType": "none", 
-              "classification": "csv", 
-              "recordCount": "38129", 
-              "typeOfData": "file", 
-              "areColumnsQuoted": "false", 
-              "columnsOrdered": "true", 
-              "objectCount": "1", 
-              "delimiter": ",", 
-              "skip.header.line.count": "1", 
-              "averageRecordSize": "36", 
-              "sizeKey": "1372652"
-          }, 
-          location: "s3://covid19-lake/jhu/jhu_time_series/status=death/", 
-          numberOfBuckets: -1, 
-          storedAsSubDirectories: false, 
-          columns: [
-            {
-              name: "province/state",
-              type: "string"
-            },
-            {
-              name: "country/region",
-              type: "string"
-            },
-            {
-              name: "lat",
-              type: "double",
-              comment: "location (latitude)"
-            },
-            {
-              name: "long",
-              type: "double",
-              comment: "location (longitude)"
-            },
-            {
-              name: "date",
-              type: "string",
-              comment: "reporting date"
-            },
-            {
-              name: "value",
-              type: "double",
-              comment: "number of cases"
-            }
-          ],
-          compressed: false
-      }, 
-      parameters: {}, 
-      values: ["death"]
-    }
-    }).addDependsOn(jhu_ts_table);
-
-
+    // #region JHU 
     const jhu_cons_table = new glue.CfnTable(this, 'jhu_consolidated', {
       databaseName: db.databaseName,
       catalogId: this.account,
       tableInput: {
-        description: "Johns Hopkins University Consolidated data on COVID-19 cases",
-        name: "jhu_consolidated",
+        description: "Johns Hopkins University Consolidated data on COVID-19 cases, sourced from Enigma",
+        name: "enigma_jhu",
         parameters: {
           has_encrypted_data: false,
           classification: "csv", 
@@ -321,54 +44,70 @@ export class CovidLakeStack extends cdk.Stack {
         storageDescriptor: { 
           columns: [
             {
-              type: "bigint", 
-              name: "date",
-              comment: "reported date"
-            }, 
-            {
-              name: "state",
-              type: "string"
+              name: "fips",
+              type: "string", 
+              comment: "state and county two digits code"
             },
             {
-              type: "bigint", 
-              name: "positive",
-              comment: "nunmber of confirmed cases"
+              name: "admin2",
+              type: "string", 
+              comment: "county name"
+            },
+            {
+              name: "province_state",
+              type: "string", 
+              comment: "province name or state name"
             }, 
             {
-              type: "bigint", 
-              name: "negative",
-              comment: "number of negative tests"
+              name: "country_region",
+              type: "string", 
+              comment: "country name or region name"
+            },
+            {
+              name: "last_update",
+              type: "string", 
+              comment: "last update timestamp"
             }, 
             {
-              type: "bigint", 
-              name: "pending",
-              comment: "number of pending results"
+              name: "latitude",
+              type: "double", 
+              comment: "location (latitude)"
             }, 
             {
-              type: "bigint", 
-              name: "hospitalized",
-              comment: "number of hospitalized patients"
+              name: "longitude",
+              type: "double", 
+              comment: "location (longitude)"
             }, 
             {
+              name: "confirmed",
               type: "bigint", 
-              name: "death",
+              comment: "number of confirmed cases"
+            }, 
+            {
+              name: "deaths",
+              type: "bigint", 
               comment: "number of deaths"
             }, 
             {
+              name: "recovered",
               type: "bigint", 
-              name: "total",
-              comment: "total tests"
+              comment: "number of recovered patients"
             }, 
             {
-              name: "dateChecked",
-              type: "string",
-              comment: "test date"
+              name: "active",
+              type: "bigint", 
+              comment: "number of active cases"
+            },
+            {
+              name: "combined_key",
+              type: "string", 
+              comment: "county name+state name+country name"
             }
             
           ],
           compressed: false,
           inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
-          location: "s3://covid19-lake/jhu/jhu_consolidated",
+          location: "s3://covid19-lake/enigma-jhu/",
           outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
           serdeInfo: {
             serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
@@ -381,6 +120,18 @@ export class CovidLakeStack extends cdk.Stack {
         tableType: "EXTERNAL_TABLE"
       }
     });
+
+    new glue.CfnCrawler(this, 'jhu-crawler', {
+      name: 'covid-enigma-jhu-crawler',
+      databaseName: dbName,
+      role: role.roleArn,
+      targets: {
+        catalogTargets: [{databaseName: db.databaseName, tables: ['enigma_jhu']}]
+      },
+      schedule: {scheduleExpression: 'cron(5 * * * ? *)'},
+      schemaChangePolicy: {deleteBehavior: "LOG"},
+      configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}"
+    }).addDependsOn(jhu_cons_table);
     // #region
 
     // #region allen
@@ -643,7 +394,7 @@ export class CovidLakeStack extends cdk.Stack {
       schedule: {scheduleExpression: 'cron(5 * * * ? *)'},
       schemaChangePolicy: {deleteBehavior: "LOG"},
       configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}"
-    });
+    }).addDependsOn(allen_metadata_table);
     new glue.CfnCrawler(this, 'allen-comprehend-crawler', {
       name: 'covid-alleninstitute-comprehend-crawler',
       databaseName: dbName,
@@ -654,16 +405,16 @@ export class CovidLakeStack extends cdk.Stack {
       schedule: {scheduleExpression: 'cron(5 * * * ? *)'},
       schemaChangePolicy: {deleteBehavior: "LOG"},
       configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}"
-    });
+    }).addDependsOn(allen_comprehend_table);
     // #region
 
     // #region covid_testing
-    const covid_testing_counties_table = new glue.CfnTable(this, 'covid_testing_counties', {
+    const covid_testing_us_daily_table = new glue.CfnTable(this, 'covid_testing_us_daily', {
       databaseName: db.databaseName,
       catalogId: this.account,
       tableInput: {
-        name: "covid_testing_counties",
-        description: "Testing data at country level",
+        name: "covid_testing_us_daily",
+        description: "USA total test daily trend.  Sourced from covidtracking.com via REARC",
         parameters: {
           has_encrypted_data: false,
           classification: "csv", 
@@ -675,46 +426,476 @@ export class CovidLakeStack extends cdk.Stack {
         },
         storageDescriptor: {
           columns: [
-            {
-              type: "string", 
-              name: "state",
-              comment: ""
+          {
+            name: "date",
+            type: "string", 
+            comment: "reporting date"
+          },
+          {
+            name: "states",
+            type: "bigint", 
+            comment: "number of states and territories included"
           }, 
           {
-              type: "string", 
-              name: "county",
-              comment: ""
-          }, 
+            name: "positive",
+            type: "double",
+            comment: "number of positive cases"
+          },
           {
-              type: "string", 
-              name: "covid19Site",
-              comment: ""
-          }, 
+            name: "negative",
+            type: "double",
+            comment: "number of negative cases"
+          },
           {
-              type: "string", 
-              name: "dataSite"
-          }, 
+            name: "posNeg",
+            type: "double",
+            comment: "positive + negative cases"
+          },
           {
-              type: "string", 
-              name: "mainSite"
-          }, 
+            name: "pending",
+            type: "double",
+            comment: "tests pending results"
+          },
           {
-              type: "string", 
-              name: "twitter"
-          }, 
+            name: "hospitalized",
+            type: "double",
+            comment: "number of hospitalized patients"
+          },
           {
-              type: "string", 
-              name: "pui"
-          }, 
+            name: "death",
+            type: "double",
+            comment: "number of deaths"
+          },
           {
-              type: "string", 
-              name: "pum",
-              comment: ""
-          }, 
+            name: "total",
+            type: "double",
+            comment: "total tests"
+          },
+          {
+            name: "dateChecked",
+            type: "string",
+            comment: "last data sync"
+          },
+          {
+            name: "totalTestResults",
+            type: "double",
+            comment: "total test results"
+          },
+          {
+            name: "deathIncrease",
+            type: "double",
+            comment: "increase in deaths vs previous day"
+          },
+          {
+            name: "hospitalizedIncrease",
+            type: "double",
+            comment: "increase in hospitalized patients vs previous day"
+          },
+          {
+            name: "negativeIncrease",
+            type: "double",
+            comment: "increase in negative cases vs previous day"
+          },
+          {
+            name: "positiveIncrease",
+            type: "double",
+            comment: "increase in positive cases vs previous day"
+          },
+          {
+            name: "totalTestResultsIncrease",
+            type: "double",
+            comment: "increase in total results vs previous day"
+          }
           ],
           compressed: false,
           inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
-          location: "s3://covid19-lake/covid-19-testing-data/dataset/counties.csv",
+          location: "s3://covid19-lake/rearc-covid-19-testing-data/us_daily",
+          outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
+          serdeInfo: {
+            serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
+            parameters: {
+                  "field.delim": ","
+              }
+          },
+          storedAsSubDirectories: false
+        },
+        tableType: "EXTERNAL_TABLE"
+      }
+    });
+
+    const covid_testing_states_daily_table = new glue.CfnTable(this, 'covid_testing_states_daily', {
+      databaseName: db.databaseName,
+      catalogId: this.account,
+      tableInput: {
+        name: "covid_testing_states_daily",
+        description: "USA total test daily trend by state.  Sourced from covidtracking.com via REARC",
+        parameters: {
+          has_encrypted_data: false,
+          classification: "csv", 
+          areColumnsQuoted: "false", 
+          typeOfData: "file", 
+          columnsOrdered: "true", 
+          delimiter: ",", 
+          "skip.header.line.count": "1"
+        },
+        storageDescriptor: {
+          columns: [
+          {
+            name: "date",
+            type: "string", 
+            comment: "reporting date"
+          },
+          {
+            name: "state",
+            type: "string", 
+            comment: "US State"
+          }, 
+          {
+            name: "positive",
+            type: "double",
+            comment: "number of positive cases"
+          },
+          {
+            name: "negative",
+            type: "double",
+            comment: "number of negative cases"
+          },
+          {
+            name: "pending",
+            type: "double",
+            comment: "tests pending results"
+          },
+          {
+            name: "hospitalized",
+            type: "double",
+            comment: "number of hospitalized patients"
+          },
+          {
+            name: "death",
+            type: "double",
+            comment: "number of deaths"
+          },
+          {
+            name: "total",
+            type: "double",
+            comment: "total tests"
+          },
+          {
+            name: "dateChecked",
+            type: "string",
+            comment: "last data sync"
+          },
+          {
+            name: "totalTestResults",
+            type: "double",
+            comment: "total test results"
+          },
+          {
+            name: "deathIncrease",
+            type: "double",
+            comment: "increase in deaths vs previous day"
+          },
+          {
+            name: "hospitalizedIncrease",
+            type: "double",
+            comment: "increase in hospitalized patients vs previous day"
+          },
+          {
+            name: "negativeIncrease",
+            type: "double",
+            comment: "increase in negative cases vs previous day"
+          },
+          {
+            name: "positiveIncrease",
+            type: "double",
+            comment: "increase in positive cases vs previous day"
+          },
+          {
+            name: "totalTestResultsIncrease",
+            type: "double",
+            comment: "increase in total results vs previous day"
+          }
+          ],
+          compressed: false,
+          inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
+          location: "s3://covid19-lake/rearc-covid-19-testing-data/states_daily",
+          outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
+          serdeInfo: {
+            serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
+            parameters: {
+                  "field.delim": ","
+              }
+          },
+          storedAsSubDirectories: false
+        },
+        tableType: "EXTERNAL_TABLE"
+      }
+    });
+
+    const covid_testing_us_total_table = new glue.CfnTable(this, 'covid_testing_us_total', {
+      databaseName: db.databaseName,
+      catalogId: this.account,
+      tableInput: {
+        name: "covid_testing_us_total",
+        description: "USA total tests.  Sourced from covidtracking.com via REARC",
+        parameters: {
+          has_encrypted_data: false,
+          classification: "csv", 
+          areColumnsQuoted: "false", 
+          typeOfData: "file", 
+          columnsOrdered: "true", 
+          delimiter: ",", 
+          "skip.header.line.count": "1"
+        },
+        storageDescriptor: {
+          columns: [ 
+          {
+            name: "positive",
+            type: "double",
+            comment: "number of positive cases"
+          },
+          {
+            name: "negative",
+            type: "double",
+            comment: "number of negative cases"
+          },
+          {
+            name: "posNeg",
+            type: "double",
+            comment: "positive + negative cases"
+          },
+          {
+            name: "hospitalized",
+            type: "double",
+            comment: "number of hospitalized patients"
+          },
+          {
+            name: "death",
+            type: "double",
+            comment: "number of deaths"
+          },
+          {
+            name: "total",
+            type: "double",
+            comment: "total tests"
+          },
+          {
+            name: "notes",
+            type: "string",
+            comment: ""
+          },
+          {
+            name: "totalTestResults",
+            type: "double",
+            comment: "total test results"
+          }
+          ],
+          compressed: false,
+          inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
+          location: "s3://covid19-lake/rearc-covid-19-testing-data/us-total-latest",
+          outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
+          serdeInfo: {
+            serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
+            parameters: {
+                  "field.delim": ","
+              }
+          },
+          storedAsSubDirectories: false
+        },
+        tableType: "EXTERNAL_TABLE"
+      }
+    });
+
+    new glue.CfnCrawler(this, 'covid_testing_us_daily-crawler', {
+      name: 'covid_testing_us_daily_crawler',
+      databaseName: dbName,
+      role: role.roleArn,
+      targets: {
+        catalogTargets: [{databaseName: db.databaseName, tables: ['covid_testing_us_daily']}]
+      },
+      schedule: {scheduleExpression: 'cron(5 * * * ? *)'},
+      schemaChangePolicy: {deleteBehavior: "LOG"},
+      configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}"
+    }).addDependsOn(covid_testing_us_daily_table);
+    new glue.CfnCrawler(this, 'covid_testing_states_daily-crawler', {
+      name: 'covid_testing_states_daily_crawler',
+      databaseName: dbName,
+      role: role.roleArn,
+      targets: {
+        catalogTargets: [{databaseName: db.databaseName, tables: ['covid_testing_states_daily']}]
+      },
+      schedule: {scheduleExpression: 'cron(5 * * * ? *)'},
+      schemaChangePolicy: {deleteBehavior: "LOG"},
+      configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}"
+    }).addDependsOn(covid_testing_states_daily_table);
+    new glue.CfnCrawler(this, 'covid_testing_us_total-crawler', {
+      name: 'covid_testing_us_total_crawler',
+      databaseName: dbName,
+      role: role.roleArn,
+      targets: {
+        catalogTargets: [{databaseName: db.databaseName, tables: ['covid_testing_us_total']}]
+      },
+      schedule: {scheduleExpression: 'cron(5 * * * ? *)'},
+      schemaChangePolicy: {deleteBehavior: "LOG"},
+      configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}"
+    }).addDependsOn(covid_testing_us_total_table);
+    // #region
+
+    // #region static data sets
+    const state_abbrevs_table = new glue.CfnTable(this, 'state_abbrevs_table', {
+      databaseName: db.databaseName,
+      catalogId: this.account,
+      tableInput: {
+        name: "state_abbrevs",
+        description: "State abbreviations",
+        parameters: {
+          has_encrypted_data: false,
+          classification: "csv", 
+          areColumnsQuoted: "false", 
+          typeOfData: "file", 
+          columnsOrdered: "true", 
+          delimiter: ",", 
+          "skip.header.line.count": "1"
+        },
+        storageDescriptor: {
+          columns: [ 
+          {
+            name: "state",
+            type: "string",
+            comment: "State name"
+          },
+          {
+            name: "abbreviation",
+            type: "string",
+            comment: "abbreviation"
+          }
+          ],
+          compressed: false,
+          inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
+          location: "s3://covid19-lake/static-datasets/state-abv",
+          outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
+          serdeInfo: {
+            serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
+            parameters: {
+                  "field.delim": ","
+              }
+          },
+          storedAsSubDirectories: false
+        },
+        tableType: "EXTERNAL_TABLE"
+      }
+    });
+
+    const county_pop_table = new glue.CfnTable(this, 'county_pop_table', {
+      databaseName: db.databaseName,
+      catalogId: this.account,
+      tableInput: {
+        name: "county_populations",
+        description: "Population for each county",
+        parameters: {
+          has_encrypted_data: false,
+          classification: "csv", 
+          areColumnsQuoted: "false", 
+          typeOfData: "file", 
+          columnsOrdered: "true", 
+          delimiter: ",", 
+          "skip.header.line.count": "1"
+        },
+        storageDescriptor: {
+          columns: [  
+          {
+            name: "Id",
+            type: "string",
+            comment: "geo id"
+          },
+          {
+            name: "Id2",
+            type: "string",
+            comment: "geo id2"
+          },
+          {
+            name: "county",
+            type: "string",
+            comment: "county name"
+          },
+          {
+            name: "state",
+            type: "string",
+            comment: "state name"
+          },
+          {
+            name: "Population Estimate 2018",
+            type: "string",
+            comment: ""
+          }
+          ],
+          compressed: false,
+          inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
+          location: "s3://covid19-lake/static-datasets/CountyPopulation",
+          outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
+          serdeInfo: {
+            serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
+            parameters: {
+                  "field.delim": ","
+              }
+          },
+          storedAsSubDirectories: false
+        },
+        tableType: "EXTERNAL_TABLE"
+      }
+    });
+
+    const country_code_table = new glue.CfnTable(this, 'country_code_table', {
+      databaseName: db.databaseName,
+      catalogId: this.account,
+      tableInput: {
+        name: "country_codes",
+        description: "Country codes",
+        parameters: {
+          has_encrypted_data: false,
+          classification: "csv", 
+          areColumnsQuoted: "false", 
+          typeOfData: "file", 
+          columnsOrdered: "true", 
+          delimiter: ",", 
+          "skip.header.line.count": "1"
+        },
+        storageDescriptor: {
+          columns: [
+          {
+            name: "Country",
+            type: "string",
+            comment: "geo id"
+          },
+          {
+            name: "Alpha-2 code",
+            type: "string",
+            comment: "geo id2"
+          },
+          {
+            name: "Alpha-3 code",
+            type: "string",
+            comment: "state name"
+          },
+          {
+            name: "Numeric code",
+            type: "bigint",
+            comment: ""
+          },
+          {
+            name: "Latitude",
+            type: "bigint",
+            comment: ""
+          },
+          {
+            name: "Longitude",
+            type: "bigint",
+            comment: ""
+          }
+          ],
+          compressed: false,
+          inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
+          location: "s3://covid19-lake/static-datasets/countrycode",
           outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
           serdeInfo: {
             serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
@@ -728,36 +909,5 @@ export class CovidLakeStack extends cdk.Stack {
       }
     });
     // #region
-    
-    /* 
-    new glue.CfnCrawler(this, 'jhu-crawler', {
-      name: 'covid-jhu-crawler',
-      databaseName: dbName,
-      role: role.roleArn,
-      targets: {
-        //s3Targets: [{path:'s3://covid19-lake/jhu/jhu_time_series'}, {path:'s3://covid19-lake/jhu/jhu_consolidated'}]
-        catalogTargets: [{databaseName: db.databaseName, tables: ['jhu_time_series', "jhu_consolidated"]}]
-      },
-      schedule: {scheduleExpression: 'cron(5 * * * ? *)'},
-      schemaChangePolicy: {deleteBehavior: "LOG"},
-      configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}"
-    });
-
-
-
-    
-    new glue.CfnCrawler(this, 'covid-covidtracking-crawler', {
-      name: 'covid-covidtracking-crawler',
-      databaseName: dbName,
-      role: role.roleArn,
-      targets: {
-        s3Targets: [{path:'s3://covid19-lake/covidtracking.com'}]
-        //catalogTargets: [{databaseName: db.databaseName, tables: ['jhu_time_series', "jhu_consolidated"]}]
-      },
-      schedule: {scheduleExpression: 'cron(5 * * * ? *)'},
-      schemaChangePolicy: {deleteBehavior: "LOG"},
-      configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}"
-    });
-    */
   }
 }
