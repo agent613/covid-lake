@@ -493,39 +493,233 @@ export class CovidLakeStack extends cdk.Stack {
       tableInput: {
         description: "Comprehend Medical results run against Allen Institute data on medical papers.",
         name: "alleninstitute_comprehend_medical",
+        tableType: "EXTERNAL_TABLE",
+        storageDescriptor: {
+          columns: [
+                {
+                  name: "paper_id",
+                  type: "string",
+                  comment: ""
+                },
+                {
+                  name: "date",
+                  type: "array<string>",
+                  comment: ""
+                },
+                {
+                  name: "dx_name",
+                  type: "array<string>",
+                  comment: ""
+                },
+                {
+                  name: "test_name",
+                  type: "array<string>",
+                  comment: ""
+                },
+                {
+                  name: "procedure_name",
+                  type: "array<string>",
+                  comment: ""
+                },
+                {
+                  name: "phone_or_fax",
+                  type: "array<string>",
+                  comment: ""
+                },
+                {
+                  name: "time_to_test_name",
+                  type: "array<string>",
+                  comment: ""
+                },
+                {
+                  name: "url",
+                  type: "array<string>",
+                  comment: ""
+                },
+                {
+                  name: "generic_name",
+                  type: "array<string>",
+                  comment: ""
+                },
+                {
+                  name: "name",
+                  type: "array<string>",
+                  comment: ""
+                },
+                {
+                  name: "brand_name",
+                  type: "array<string>",
+                  comment: ""
+                },
+                {
+                  name: "address",
+                  type: "array<string>",
+                  comment: ""
+                },
+                {
+                  name: "id",
+                  type: "array<string>",
+                  comment: ""
+                },
+                {
+                  name: "treatment_name",
+                  type: "array<string>",
+                  comment: ""
+                },
+                {
+                  name: "system_organ_site",
+                  type: "array<string>",
+                  comment: ""
+                },
+                {
+                  name: "time_to_treatment_name",
+                  type: "array<string>",
+                  comment: ""
+                },
+                {
+                  name: "time_to_dx_name",
+                  type: "array<string>",
+                  comment: ""
+                },
+                {
+                  name: "time_to_medication_name",
+                  type: "array<string>",
+                  comment: ""
+                },
+                {
+                  name: "time_to_procedure_name",
+                  type: "array<string>",
+                  comment: ""
+                },
+                {
+                  name: "profession",
+                  type: "array<string>",
+                  comment: ""
+                },
+                {
+                  name: "email",
+                  type: "array<string>",
+                  comment: ""
+                },
+                {
+                  name: "age",
+                  type: "array<string>",
+                  comment: ""
+                }
+            ],
+            location: "s3://covid19-lake/alleninstitute/CORD19/comprehendmedical/",
+            inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
+            outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
+            compressed: false,
+            numberOfBuckets: -1,
+            serdeInfo: {
+              serializationLibrary: "org.openx.data.jsonserde.JsonSerDe",
+              parameters: {
+                paths: "ADDRESS,AGE,BRAND_NAME,DATE,DX_NAME,EMAIL,GENERIC_NAME,ID,NAME,PHONE_OR_FAX,PROCEDURE_NAME,PROFESSION,SYSTEM_ORGAN_SITE,TEST_NAME,TIME_TO_DX_NAME,TIME_TO_MEDICATION_NAME,TIME_TO_PROCEDURE_NAME,TIME_TO_TEST_NAME,TIME_TO_TREATMENT_NAME,TREATMENT_NAME,URL,paper_id"
+              }
+            },
+            parameters: {
+              compressionType: "none",
+              classification: "json",
+              typeOfData: "file"
+            },
+            storedAsSubDirectories: false
+        },
+        parameters: {
+            compressionType: "none",
+            classification: "json",
+            typeOfData: "file"
+        }
+      }
+    });
+
+    new glue.CfnCrawler(this, 'allen-metadata-crawler', {
+      name: 'covid-alleninstitute-metadata-crawler',
+      databaseName: dbName,
+      role: role.roleArn,
+      targets: {
+        catalogTargets: [{databaseName: db.databaseName, tables: ['alleninstitute_metadata']}]
+      },
+      schedule: {scheduleExpression: 'cron(5 * * * ? *)'},
+      schemaChangePolicy: {deleteBehavior: "LOG"},
+      configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}"
+    });
+    new glue.CfnCrawler(this, 'allen-comprehend-crawler', {
+      name: 'covid-alleninstitute-comprehend-crawler',
+      databaseName: dbName,
+      role: role.roleArn,
+      targets: {
+        catalogTargets: [{databaseName: db.databaseName, tables: ['alleninstitute_comprehend_medical']}]
+      },
+      schedule: {scheduleExpression: 'cron(5 * * * ? *)'},
+      schemaChangePolicy: {deleteBehavior: "LOG"},
+      configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}"
+    });
+    // #region
+
+    // #region covid_testing
+    const covid_testing_counties_table = new glue.CfnTable(this, 'covid_testing_counties', {
+      databaseName: db.databaseName,
+      catalogId: this.account,
+      tableInput: {
+        name: "covid_testing_counties",
+        description: "Testing data at country level",
         parameters: {
           has_encrypted_data: false,
           classification: "csv", 
           areColumnsQuoted: "false", 
           typeOfData: "file", 
           columnsOrdered: "true", 
-          delimiter: "\t", 
+          delimiter: ",", 
           "skip.header.line.count": "1"
         },
         storageDescriptor: {
           columns: [
             {
               type: "string", 
-              name: "Prefix",
-              comment: "S3 prefix where the paper is located"
+              name: "state",
+              comment: ""
           }, 
           {
               type: "string", 
-              name: "Key"
+              name: "county",
+              comment: ""
           }, 
           {
               type: "string", 
-              name: "ValueList"
+              name: "covid19Site",
+              comment: ""
+          }, 
+          {
+              type: "string", 
+              name: "dataSite"
+          }, 
+          {
+              type: "string", 
+              name: "mainSite"
+          }, 
+          {
+              type: "string", 
+              name: "twitter"
+          }, 
+          {
+              type: "string", 
+              name: "pui"
+          }, 
+          {
+              type: "string", 
+              name: "pum",
+              comment: ""
           }, 
           ],
           compressed: false,
           inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
-          location: "s3://covid19-lake/alleninstitute/CORD19/comprehendmedical/",
+          location: "s3://covid19-lake/covid-19-testing-data/dataset/counties.csv",
           outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
           serdeInfo: {
             serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
             parameters: {
-                  "field.delim": "\t"
+                  "field.delim": ","
               }
           },
           storedAsSubDirectories: false
@@ -534,149 +728,6 @@ export class CovidLakeStack extends cdk.Stack {
       }
     });
     // #region
-
-    const covidtracking_states_table = new glue.CfnTable(this, 'covidtracking_states', {
-      databaseName: db.databaseName,
-      catalogId: this.account,
-      tableInput: {
-        name: "covidtracking_states",
-        description: "Data on COVID-19 testing per state fron covidtracking.com",
-        parameters: {
-          has_encrypted_data: false,
-          classification: "csv", 
-          areColumnsQuoted: "false", 
-          typeOfData: "file", 
-          columnsOrdered: "true", 
-          delimiter: ",", 
-          "skip.header.line.count": "1"
-        },
-        storageDescriptor: {
-          columns: [
-          {
-              type: "string", 
-              name: "state"
-          }, 
-          {
-              type: "bigint", 
-              name: "positive",
-              comment: "positive results"
-          }, 
-          {
-            type: "bigint", 
-            name: "negative",
-            comment: "negative results"
-          }, 
-          {
-            type: "bigint", 
-            name: "pending",
-            comment: "pending results"
-          },
-          {
-            type: "bigint", 
-            name: "death",
-            comment: "number of deaths"
-          },
-          {
-            type: "bigint", 
-            name: "total",
-            comment: "total results"
-          },
-          {
-            type: "string", 
-            name: "lastUpdateEt"
-          }, 
-          {
-            type: "string", 
-            name: "checkTimeEt"
-          }, 
-          {
-            type: "string", 
-            name: "dateModified"
-          }, 
-          {
-            type: "string", 
-            name: "dateChecked"
-          }, 
-
-          ],
-          compressed: false,
-          inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
-          location: "s3://covid19-lake/covidtracking.com/states",
-          outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
-          serdeInfo: {
-            serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
-            parameters: {
-                  "field.delim": ","
-              }
-          },
-          storedAsSubDirectories: false
-        },
-        tableType: "EXTERNAL_TABLE"
-      }
-    });
-
-    const covidtracking_counties_table = new glue.CfnTable(this, 'covidtracking_counties', {
-      databaseName: db.databaseName,
-      catalogId: this.account,
-      tableInput: {
-        name: "covidtracking_counties",
-        description: "Data on COVID-19 testing per county fron covidtracking.com",
-        parameters: {
-          has_encrypted_data: false,
-          classification: "csv", 
-          areColumnsQuoted: "false", 
-          typeOfData: "file", 
-          columnsOrdered: "true", 
-          delimiter: ",", 
-          "skip.header.line.count": "1"
-        },
-        storageDescriptor: {
-          columns: [
-          {
-              type: "string", 
-              name: "state"
-          }, 
-          {
-            type: "string", 
-            name: "county"
-          }, 
-          {
-            type: "string", 
-            name: "covid19Site"
-          }, 
-          {
-            type: "string", 
-            name: "dataSite"
-          },
-          {
-            type: "string", 
-            name: "mainSite"
-          },
-          {
-            type: "string", 
-            name: "twitter"
-          },
-          {
-            type: "string", 
-            name: "pui"
-          },
-          ],
-          compressed: false,
-          inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
-          location: "s3://covid19-lake/covidtracking.com/counties",
-          outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
-          serdeInfo: {
-            serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
-            parameters: {
-                  "field.delim": ","
-              }
-          },
-          storedAsSubDirectories: false
-        },
-        tableType: "EXTERNAL_TABLE"
-      }
-    });
-
     
     /* 
     new glue.CfnCrawler(this, 'jhu-crawler', {
@@ -692,18 +743,7 @@ export class CovidLakeStack extends cdk.Stack {
       configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}"
     });
 
-    new glue.CfnCrawler(this, 'allen-metadata-crawler', {
-      name: 'covid-alleninstitute-metadata-crawler',
-      databaseName: dbName,
-      role: role.roleArn,
-      targets: {
-        //s3Targets: [{path:'s3://covid19-lake/alleninstitute/CORD19/raw/metadata'}]
-        catalogTargets: [{databaseName: db.databaseName, tables: ['alleninstitute_metadata']}]
-      },
-      schedule: {scheduleExpression: 'cron(5 * * * ? *)'},
-      schemaChangePolicy: {deleteBehavior: "LOG"},
-      configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}"
-    });
+
 
     
     new glue.CfnCrawler(this, 'covid-covidtracking-crawler', {
