@@ -18,8 +18,8 @@ export class CovidLakeStack extends cdk.Stack {
     const role = new iam.Role(this, 'glueRole', {
       assumedBy: new iam.ServicePrincipal('glue.amazonaws.com'),
       managedPolicies: [
-        iam.ManagedPolicy.fromManagedPolicyArn(this, 'glueServiceRole', 'arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole')/*,
-        iam.ManagedPolicy.fromManagedPolicyArn(this, 's3access', 'arn:aws:iam::aws:policy/AmazonS3FullAccess')*/
+        iam.ManagedPolicy.fromManagedPolicyArn(this, 'glueServiceRole', 'arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole'),
+        iam.ManagedPolicy.fromManagedPolicyArn(this, 's3access', 'arn:aws:iam::aws:policy/AmazonS3FullAccess')
       ]
     });
     // #endregion
@@ -70,32 +70,32 @@ export class CovidLakeStack extends cdk.Stack {
             }, 
             {
               name: "latitude",
-              type: "double", 
+              type: "string", 
               comment: "location (latitude)"
             }, 
             {
               name: "longitude",
-              type: "double", 
+              type: "string", 
               comment: "location (longitude)"
             }, 
             {
               name: "confirmed",
-              type: "bigint", 
+              type: "string", 
               comment: "number of confirmed cases"
             }, 
             {
               name: "deaths",
-              type: "bigint", 
+              type: "string", 
               comment: "number of deaths"
             }, 
             {
               name: "recovered",
-              type: "bigint", 
+              type: "string", 
               comment: "number of recovered patients"
             }, 
             {
               name: "active",
-              type: "bigint", 
+              type: "string", 
               comment: "number of active cases"
             },
             {
@@ -110,10 +110,12 @@ export class CovidLakeStack extends cdk.Stack {
           location: "s3://covid19-lake/enigma-jhu/",
           outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
           serdeInfo: {
-            serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
+            serializationLibrary: "org.apache.hadoop.hive.serde2.OpenCSVSerde", 
             parameters: {
-                  "field.delim": ","
-              }
+              separatorChar: ",",
+              quoteChar: '"',
+              escapeChar: "\\"
+            }
           },
           storedAsSubDirectories: false
         },
@@ -152,10 +154,15 @@ export class CovidLakeStack extends cdk.Stack {
         },
         storageDescriptor: {
           columns: [
-            {
+          {
+              type: "string", 
+              name: "cord_uid",
+              comment: "unique identifier coming from CORD (COVID-19 Open Research Dataset)"
+          }, 
+          {
               type: "string", 
               name: "sha",
-              comment: "the paper id.  this represents the file name of the json file on s3 where the details are stored"
+              comment: "hash for the paper id.  can now include multiple files (some PMC files have multiple associated PDFs)"
           }, 
           {
               type: "string", 
@@ -169,19 +176,23 @@ export class CovidLakeStack extends cdk.Stack {
           }, 
           {
               type: "string", 
-              name: "doi"
+              name: "doi",
+              comment: "doi id for the paper"
           }, 
           {
               type: "string", 
-              name: "pmcid"
-          }, 
-          {
-              type: "bigint", 
-              name: "pubmed_id"
+              name: "pmcid",
+              comment: "pmc id for the paper"
           }, 
           {
               type: "string", 
-              name: "license"
+              name: "pubmed_id",
+              comment: "pubmed id for the paper"
+          }, 
+          {
+              type: "string", 
+              name: "license",
+              comment: "license associated to the paper"
           }, 
           {
               type: "string", 
@@ -189,9 +200,9 @@ export class CovidLakeStack extends cdk.Stack {
               comment: "abstract of the paper"
           }, 
           {
-              type: "bigint", 
+              type: "string", 
               name: "publish_time",
-              comment: "when the paper was published"
+              comment: "When the paper was published.  Some papers are at the day level, while others are at the year."
           }, 
           {
               type: "string", 
@@ -203,12 +214,14 @@ export class CovidLakeStack extends cdk.Stack {
               comment: "journal in which the paper was published"
           }, 
           {
-              type: "bigint", 
-              name: "microsoft academic paper id"
+              type: "string", 
+              name: "microsoft academic paper id",
+              comment: "paper id in microsoft academic (if applicable)"
           }, 
           {
               type: "string", 
-              name: "who #covidence"
+              name: "who #covidence",
+              comment: "covidence number from WHO"
           }, 
           {
               type: "boolean", 
@@ -218,19 +231,25 @@ export class CovidLakeStack extends cdk.Stack {
           {
               name: "full_text_file",
               type: "string",
-              comment: "location of the full text of the paper"
+              comment: "which S3 folder/prefix the full text is in"
+          },
+          {
+            name: "url",
+            type: "string",
+            comment: "url of the journal or paper"
           }
-
           ],
           compressed: false,
           inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
           location: "s3://covid19-lake/alleninstitute/CORD19/raw/metadata",
           outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
           serdeInfo: {
-            serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
+            serializationLibrary: "org.apache.hadoop.hive.serde2.OpenCSVSerde", 
             parameters: {
-                  "field.delim": ","
-              }
+              separatorChar: ",",
+              quoteChar: '"',
+              escapeChar: "\\"
+            }
           },
           storedAsSubDirectories: false
         },
