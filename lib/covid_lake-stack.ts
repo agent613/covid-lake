@@ -8,7 +8,7 @@ export class CovidLakeStack extends cdk.Stack {
     super(scope, id, props);
 
      // #region Database
-    const dbName = 'covid';
+    const dbName = 'covid-19';
     const db = new glue.Database(this, dbName, {
       databaseName: dbName
     });
@@ -765,8 +765,8 @@ export class CovidLakeStack extends cdk.Stack {
       databaseName: db.databaseName,
       catalogId: this.account,
       tableInput: {
-        name: "state_abbrevs",
-        description: "State abbreviations",
+        name: "us_state_abbreviations",
+        description: "Lookup table for US state abbreviations",
         parameters: {
           has_encrypted_data: false,
           classification: "csv", 
@@ -810,7 +810,7 @@ export class CovidLakeStack extends cdk.Stack {
       catalogId: this.account,
       tableInput: {
         name: "county_populations",
-        description: "Population for each county",
+        description: "Lookup table for population for each county based on census data",
         parameters: {
           has_encrypted_data: false,
           classification: "csv", 
@@ -869,7 +869,7 @@ export class CovidLakeStack extends cdk.Stack {
       catalogId: this.account,
       tableInput: {
         name: "country_codes",
-        description: "Country codes",
+        description: "Lookup table for country codes",
         parameters: {
           has_encrypted_data: false,
           classification: "csv", 
@@ -904,12 +904,12 @@ export class CovidLakeStack extends cdk.Stack {
           {
             name: "Latitude",
             type: "bigint",
-            comment: ""
+            comment: "location (latitude)"
           },
           {
             name: "Longitude",
             type: "bigint",
-            comment: ""
+            comment: "location (longitude)"
           }
           ],
           compressed: false,
