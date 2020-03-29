@@ -269,7 +269,7 @@ export class CovidLakeStack extends cdk.Stack {
                 {
                   name: "paper_id",
                   type: "string",
-                  comment: ""
+                  comment: "the id of the paper"
                 },
                 {
                   name: "date",
@@ -279,27 +279,27 @@ export class CovidLakeStack extends cdk.Stack {
                 {
                   name: "dx_name",
                   type: "array<string>",
-                  comment: ""
+                  comment: "All medical conditions listed. Includes present illness, reason for visit, and medical history"
                 },
                 {
                   name: "test_name",
                   type: "array<string>",
-                  comment: ""
+                  comment: "Procedures performed on a patient for diagnostic, measurement, screening, or rating that might have a resulting value"
                 },
                 {
                   name: "procedure_name",
                   type: "array<string>",
-                  comment: ""
+                  comment: "Interventions as a one-time action performed on the patient to treat a medical condition or to provide patient care"
                 },
                 {
                   name: "phone_or_fax",
                   type: "array<string>",
-                  comment: ""
+                  comment: "Any phone, fax, or pager number. Excludes named phone numbers, such as 1-800-QUIT-NOW and 911"
                 },
                 {
                   name: "time_to_test_name",
                   type: "array<string>",
-                  comment: ""
+                  comment: "The date a test was performed"
                 },
                 {
                   name: "url",
@@ -309,72 +309,72 @@ export class CovidLakeStack extends cdk.Stack {
                 {
                   name: "generic_name",
                   type: "array<string>",
-                  comment: ""
+                  comment: "Non-brand name, ingredient name, or formula mixture of the medication or therapeutic agent"
                 },
                 {
                   name: "name",
                   type: "array<string>",
-                  comment: ""
+                  comment: "All names. Typically, names of the patient, family, or provider"
                 },
                 {
                   name: "brand_name",
                   type: "array<string>",
-                  comment: ""
+                  comment: "The copyrighted brand name of the medication or therapeutic agent"
                 },
                 {
                   name: "address",
                   type: "array<string>",
-                  comment: ""
+                  comment: "All geographical subdivisions of an address of any facility, named medical facilities, or wards within a facility"
                 },
                 {
                   name: "id",
                   type: "array<string>",
-                  comment: ""
+                  comment: "Social security number, medical record number, facility identification number, clinical trial number, certificate or license number, vehicle or device number. This includes any biometric number of the patient, place of care, or provider."
                 },
                 {
                   name: "treatment_name",
                   type: "array<string>",
-                  comment: ""
+                  comment: "Interventions performed over a span of time for combating a disease or disorder. This includes groupings of medications, such as antivirals and vaccinations"
                 },
                 {
                   name: "system_organ_site",
                   type: "array<string>",
-                  comment: ""
+                  comment: "Body systems, anatomic locations or regions, and body sites"
                 },
                 {
                   name: "time_to_treatment_name",
                   type: "array<string>",
-                  comment: ""
+                  comment: "The date a treatment was administered"
                 },
                 {
                   name: "time_to_dx_name",
                   type: "array<string>",
-                  comment: ""
+                  comment: "The date a medical condition occurred"
                 },
                 {
                   name: "time_to_medication_name",
                   type: "array<string>",
-                  comment: ""
+                  comment: "The date a medication was taken"
                 },
                 {
                   name: "time_to_procedure_name",
                   type: "array<string>",
-                  comment: ""
+                  comment: "The date a procedure was performed"
                 },
                 {
                   name: "profession",
                   type: "array<string>",
-                  comment: ""
+                  comment: "Any profession or employer that pertains to the patient or the patient's family. It does include the profession of the clinician mentioned in the note"
                 },
                 {
                   name: "email",
                   type: "array<string>",
-                  comment: ""
+                  comment: "Any email address"
                 },
                 {
                   name: "age",
                   type: "array<string>",
-                  comment: ""
+                  comment: "All components of age, spans of age, or any age mentioned. This includes those of a patient, family members, or others. The default is in years unless otherwise noted"
                 }
             ],
             location: "s3://covid19-lake/alleninstitute/CORD19/comprehendmedical/",
@@ -810,7 +810,7 @@ export class CovidLakeStack extends cdk.Stack {
       catalogId: this.account,
       tableInput: {
         name: "county_populations",
-        description: "Lookup table for population for each county based on census data",
+        description: "Lookup table for population for each county based on recent census data",
         parameters: {
           has_encrypted_data: false,
           classification: "csv", 
