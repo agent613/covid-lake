@@ -15,13 +15,13 @@ export class CovidLakeStack extends cdk.Stack {
     // #endregion
 
     // #region IAM Role 
-    const role = new iam.Role(this, 'glueRole', {
+    /*const role = new iam.Role(this, 'glueRole', {
       assumedBy: new iam.ServicePrincipal('glue.amazonaws.com'),
       managedPolicies: [
         iam.ManagedPolicy.fromManagedPolicyArn(this, 'glueServiceRole', 'arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole'),
         iam.ManagedPolicy.fromManagedPolicyArn(this, 's3access', 'arn:aws:iam::aws:policy/AmazonS3FullAccess')
       ]
-    });
+    });*/
     // #endregion
 
 
@@ -123,6 +123,7 @@ export class CovidLakeStack extends cdk.Stack {
       }
     });
 
+    /*
     new glue.CfnCrawler(this, 'jhu-crawler', {
       name: 'covid-enigma-jhu-crawler',
       databaseName: dbName,
@@ -134,6 +135,7 @@ export class CovidLakeStack extends cdk.Stack {
       schemaChangePolicy: {deleteBehavior: "LOG"},
       configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}"
     }).addDependsOn(jhu_cons_table);
+    */
     // #region
 
     // #region allen
@@ -403,6 +405,7 @@ export class CovidLakeStack extends cdk.Stack {
       }
     });
 
+    /*
     new glue.CfnCrawler(this, 'allen-metadata-crawler', {
       name: 'covid-alleninstitute-metadata-crawler',
       databaseName: dbName,
@@ -425,6 +428,7 @@ export class CovidLakeStack extends cdk.Stack {
       schemaChangePolicy: {deleteBehavior: "LOG"},
       configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}"
     }).addDependsOn(allen_comprehend_table);
+    */
     // #region
 
     // #region covid_testing
@@ -725,6 +729,7 @@ export class CovidLakeStack extends cdk.Stack {
       }
     });
 
+    /*
     new glue.CfnCrawler(this, 'covid_testing_us_daily-crawler', {
       name: 'covid_testing_us_daily_crawler',
       databaseName: dbName,
@@ -758,6 +763,7 @@ export class CovidLakeStack extends cdk.Stack {
       schemaChangePolicy: {deleteBehavior: "LOG"},
       configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}"
     }).addDependsOn(covid_testing_us_total_table);
+    */
     // #region
 
     // #region static data sets
