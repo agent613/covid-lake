@@ -1066,7 +1066,7 @@ export class CovidLakeStack extends cdk.Stack {
       catalogId: this.account,
       tableInput: {
         name: "hospital_beds",
-        description: "Data on hosptial beds and their utilization in the US.  Sourced from Definitive Healthcare via rearc",
+        description: "Data on hospital beds and their utilization in the US.  Sourced from Definitive Healthcare via rearc",
         parameters: {
           has_encrypted_data: false,
           classification: "json", 
