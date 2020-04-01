@@ -934,5 +934,130 @@ export class CovidLakeStack extends cdk.Stack {
       }
     });
     // #region
+
+    // #region NY Times
+    const nyt_counties_table = new glue.CfnTable(this, 'nytimes_counties_table', {
+      databaseName: db.databaseName,
+      catalogId: this.account,
+      tableInput: {
+        name: "nytimes_counties",
+        description: "Data on COVID-19 cases from NY Times at US county level",
+        parameters: {
+          has_encrypted_data: false,
+          classification: "csv", 
+          areColumnsQuoted: "false", 
+          typeOfData: "file", 
+          columnsOrdered: "true", 
+          delimiter: ",", 
+          "skip.header.line.count": "1"
+        },
+        storageDescriptor: {
+          columns: [
+          {
+            name: "date",
+            type: "string",
+            comment: "reporting date"
+          },
+          {
+            name: "county",
+            type: "string",
+            comment: ""
+          },
+          {
+            name: "state",
+            type: "string",
+            comment: ""
+          },
+          {
+            name: "fips",
+            type: "bigint",
+            comment: "FIPS code"
+          },
+          {
+            name: "cases",
+            type: "bigint",
+            comment: "# confirmed cases"
+          },
+          {
+            name: "deaths",
+            type: "bigint",
+            comment: "# deaths"
+          }
+          ],
+          compressed: false,
+          inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
+          location: "s3://covid19-lake/rearc-covid-19-nyt-data-in-usa/us-counties",
+          outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
+          serdeInfo: {
+            serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
+            parameters: {
+                  "field.delim": ","
+              }
+          },
+          storedAsSubDirectories: false
+        },
+        tableType: "EXTERNAL_TABLE"
+      }
+    });
+
+    const nyt_states_table = new glue.CfnTable(this, 'nytimes_states_table', {
+      databaseName: db.databaseName,
+      catalogId: this.account,
+      tableInput: {
+        name: "nytimes_states",
+        description: "Data on COVID-19 cases from NY Times at US state level",
+        parameters: {
+          has_encrypted_data: false,
+          classification: "csv", 
+          areColumnsQuoted: "false", 
+          typeOfData: "file", 
+          columnsOrdered: "true", 
+          delimiter: ",", 
+          "skip.header.line.count": "1"
+        },
+        storageDescriptor: {
+          columns: [
+          {
+            name: "date",
+            type: "string",
+            comment: "reporting date"
+          },
+          {
+            name: "state",
+            type: "string",
+            comment: ""
+          },
+          {
+            name: "fips",
+            type: "bigint",
+            comment: "FIPS code"
+          },
+          {
+            name: "cases",
+            type: "bigint",
+            comment: "# confirmed cases"
+          },
+          {
+            name: "deaths",
+            type: "bigint",
+            comment: "# deaths"
+          }
+          ],
+          compressed: false,
+          inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
+          location: "s3://covid19-lake/rearc-covid-19-nyt-data-in-usa/us-states",
+          outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
+          serdeInfo: {
+            serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
+            parameters: {
+                  "field.delim": ","
+              }
+          },
+          storedAsSubDirectories: false
+        },
+        tableType: "EXTERNAL_TABLE"
+      }
+    });
+    // #region
   }
 }
