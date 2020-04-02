@@ -34,12 +34,8 @@ export class CovidLakeStack extends cdk.Stack {
         name: "enigma_jhu",
         parameters: {
           has_encrypted_data: false,
-          classification: "csv", 
-          areColumnsQuoted: "false", 
-          typeOfData: "file", 
-          columnsOrdered: "true", 
-          delimiter: ",", 
-          "skip.header.line.count": "1"
+          classification: "json", 
+          typeOfData: "file"
         },
         storageDescriptor: { 
           columns: [
@@ -70,32 +66,32 @@ export class CovidLakeStack extends cdk.Stack {
             }, 
             {
               name: "latitude",
-              type: "string", 
+              type: "double", 
               comment: "location (latitude)"
             }, 
             {
               name: "longitude",
-              type: "string", 
+              type: "double", 
               comment: "location (longitude)"
             }, 
             {
               name: "confirmed",
-              type: "string", 
+              type: "int", 
               comment: "number of confirmed cases"
             }, 
             {
               name: "deaths",
-              type: "string", 
+              type: "int", 
               comment: "number of deaths"
             }, 
             {
               name: "recovered",
-              type: "string", 
+              type: "int", 
               comment: "number of recovered patients"
             }, 
             {
               name: "active",
-              type: "string", 
+              type: "int", 
               comment: "number of active cases"
             },
             {
@@ -107,15 +103,13 @@ export class CovidLakeStack extends cdk.Stack {
           ],
           compressed: false,
           inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
-          location: "s3://covid19-lake/enigma-jhu/",
+          location: "s3://covid19-lake/enigma-jhu/json",
           outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
           serdeInfo: {
-            serializationLibrary: "org.apache.hadoop.hive.serde2.OpenCSVSerde", 
             parameters: {
-              separatorChar: ",",
-              quoteChar: '"',
-              escapeChar: "\\"
-            }
+              paths: "active,admin2,combined_key,confirmed,country_region,deaths,fips,last_update,latitude,longitude,province_state,recovered"
+            },
+            serializationLibrary: "org.openx.data.jsonserde.JsonSerDe"
           },
           storedAsSubDirectories: false
         },
@@ -147,12 +141,8 @@ export class CovidLakeStack extends cdk.Stack {
         name: "alleninstitute_metadata",
         parameters: {
           has_encrypted_data: false,
-          classification: "csv", 
-          areColumnsQuoted: "false", 
-          typeOfData: "file", 
-          columnsOrdered: "true", 
-          delimiter: ",", 
-          "skip.header.line.count": "1"
+          classification: "json",
+          typeOfData: "file"
         },
         storageDescriptor: {
           columns: [
@@ -243,15 +233,13 @@ export class CovidLakeStack extends cdk.Stack {
           ],
           compressed: false,
           inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
-          location: "s3://covid19-lake/alleninstitute/CORD19/raw/metadata",
+          location: "s3://covid19-lake/alleninstitute/CORD19/json/metadata",
           outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
           serdeInfo: {
-            serializationLibrary: "org.apache.hadoop.hive.serde2.OpenCSVSerde", 
             parameters: {
-              separatorChar: ",",
-              quoteChar: '"',
-              escapeChar: "\\"
-            }
+              paths: "Microsoft Academic Paper ID,WHO #Covidence,abstract,authors,cord_uid,doi,full_text_file,has_full_text,journal,license,pmcid,publish_time,pubmed_id,sha,source_x,title,url"
+            },
+            serializationLibrary: "org.openx.data.jsonserde.JsonSerDe"
           },
           storedAsSubDirectories: false
         },
@@ -440,12 +428,8 @@ export class CovidLakeStack extends cdk.Stack {
         description: "USA total test daily trend.  Sourced from covidtracking.com via REARC",
         parameters: {
           has_encrypted_data: false,
-          classification: "csv", 
-          areColumnsQuoted: "false", 
-          typeOfData: "file", 
-          columnsOrdered: "true", 
-          delimiter: ",", 
-          "skip.header.line.count": "1"
+          classification: "json", 
+          typeOfData: "file"
         },
         storageDescriptor: {
           columns: [
@@ -495,6 +479,11 @@ export class CovidLakeStack extends cdk.Stack {
             comment: "total tests"
           },
           {
+            name: "hash",
+            type: "string",
+            comment: "hash value"
+          },
+          {
             name: "dateChecked",
             type: "string",
             comment: "last data sync"
@@ -532,13 +521,17 @@ export class CovidLakeStack extends cdk.Stack {
           ],
           compressed: false,
           inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
-          location: "s3://covid19-lake/rearc-covid-19-testing-data/us_daily",
+          location: "s3://covid19-lake/rearc-covid-19-testing-data/json/us_daily",
           outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
           serdeInfo: {
+            parameters: {
+              paths: "date,dateChecked,death,deathIncrease,hash,hospitalized,hospitalizedIncrease,negative,negativeIncrease,pending,posNeg,positive,positiveIncrease,states,total,totalTestResults,totalTestResultsIncrease"
+            },
+            serializationLibrary: "org.openx.data.jsonserde.JsonSerDe"/*
             serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
             parameters: {
                   "field.delim": ","
-              }
+            }*/
           },
           storedAsSubDirectories: false
         },
@@ -554,9 +547,9 @@ export class CovidLakeStack extends cdk.Stack {
         description: "USA total test daily trend by state.  Sourced from covidtracking.com via REARC",
         parameters: {
           has_encrypted_data: false,
-          classification: "csv", 
-          areColumnsQuoted: "false", 
+          classification: "json", 
           typeOfData: "file", 
+          areColumnsQuoted: "false", 
           columnsOrdered: "true", 
           delimiter: ",", 
           "skip.header.line.count": "1"
@@ -604,6 +597,11 @@ export class CovidLakeStack extends cdk.Stack {
             comment: "total tests"
           },
           {
+            name: "hash",
+            type: "string",
+            comment: "hash value"
+          },
+          {
             name: "dateChecked",
             type: "string",
             comment: "last data sync"
@@ -612,6 +610,11 @@ export class CovidLakeStack extends cdk.Stack {
             name: "totalTestResults",
             type: "double",
             comment: "total test results"
+          },
+          {
+            name: "fips",
+            type: "string",
+            comment: "fips code"
           },
           {
             name: "deathIncrease",
@@ -641,13 +644,17 @@ export class CovidLakeStack extends cdk.Stack {
           ],
           compressed: false,
           inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
-          location: "s3://covid19-lake/rearc-covid-19-testing-data/states_daily",
+          location: "s3://covid19-lake/rearc-covid-19-testing-data/json/states_daily",
           outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
           serdeInfo: {
+            parameters: {
+              paths: "date,dateChecked,death,deathIncrease,fips,hash,hospitalized,hospitalizedIncrease,negative,negativeIncrease,pending,positive,positiveIncrease,state,total,totalTestResults,totalTestResultsIncrease"
+            },
+            serializationLibrary: "org.openx.data.jsonserde.JsonSerDe" /*
             serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
             parameters: {
                   "field.delim": ","
-              }
+              }*/
           },
           storedAsSubDirectories: false
         },
@@ -663,12 +670,8 @@ export class CovidLakeStack extends cdk.Stack {
         description: "USA total tests.  Sourced from covidtracking.com via REARC",
         parameters: {
           has_encrypted_data: false,
-          classification: "csv", 
-          areColumnsQuoted: "false", 
-          typeOfData: "file", 
-          columnsOrdered: "true", 
-          delimiter: ",", 
-          "skip.header.line.count": "1"
+          classification: "json",
+          typeOfData: "file"
         },
         storageDescriptor: {
           columns: [ 
@@ -703,25 +706,35 @@ export class CovidLakeStack extends cdk.Stack {
             comment: "total tests"
           },
           {
-            name: "notes",
+            name: "hash",
             type: "string",
-            comment: ""
+            comment: "hash value"
+          },
+          {
+            name: "lastModified",
+            type: "string",
+            comment: "eporting date"
           },
           {
             name: "totalTestResults",
             type: "double",
             comment: "total test results"
+          },
+          {
+            name: "notes",
+            type: "string",
+            comment: ""
           }
           ],
           compressed: false,
           inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
-          location: "s3://covid19-lake/rearc-covid-19-testing-data/us-total-latest",
+          location: "s3://covid19-lake/rearc-covid-19-testing-data/json/us-total-latest",
           outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
           serdeInfo: {
-            serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
             parameters: {
-                  "field.delim": ","
-              }
+              paths: "death,hash,hospitalized,lastModified,negative,notes,posNeg,positive,total,totalTestResults"
+            },
+            serializationLibrary: "org.openx.data.jsonserde.JsonSerDe"
           },
           storedAsSubDirectories: false
         },
@@ -797,7 +810,7 @@ export class CovidLakeStack extends cdk.Stack {
           ],
           compressed: false,
           inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
-          location: "s3://covid19-lake/static-datasets/state-abv",
+          location: "s3://covid19-lake/static-datasets/csv/state-abv",
           outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
           serdeInfo: {
             serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
@@ -856,7 +869,7 @@ export class CovidLakeStack extends cdk.Stack {
           ],
           compressed: false,
           inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
-          location: "s3://covid19-lake/static-datasets/CountyPopulation",
+          location: "s3://covid19-lake/static-datasets/csv/CountyPopulation",
           outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
           serdeInfo: {
             serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
@@ -920,7 +933,7 @@ export class CovidLakeStack extends cdk.Stack {
           ],
           compressed: false,
           inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
-          location: "s3://covid19-lake/static-datasets/countrycode",
+          location: "s3://covid19-lake/static-datasets/csv/countrycode",
           outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
           serdeInfo: {
             serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
