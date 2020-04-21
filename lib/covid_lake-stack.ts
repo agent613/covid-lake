@@ -1162,12 +1162,8 @@ export class CovidLakeStack extends cdk.Stack {
         description: "Data on COVID-19 cases from NY Times at US county level",
         parameters: {
           has_encrypted_data: false,
-          classification: "csv", 
-          areColumnsQuoted: "false", 
-          typeOfData: "file", 
-          columnsOrdered: "true", 
-          delimiter: ",", 
-          "skip.header.line.count": "1"
+          classification: "json", 
+          typeOfData: "file"
         },
         storageDescriptor: {
           columns: [
@@ -1188,7 +1184,7 @@ export class CovidLakeStack extends cdk.Stack {
           },
           {
             name: "fips",
-            type: "bigint",
+            type: "string",
             comment: "FIPS code"
           },
           {
@@ -1204,12 +1200,12 @@ export class CovidLakeStack extends cdk.Stack {
           ],
           compressed: false,
           inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
-          location: "s3://covid19-lake/rearc-covid-19-nyt-data-in-usa/us-counties",
+          location: "s3://covid19-lake/rearc-covid-19-nyt-data-in-usa/json/us-counties",
           outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
           serdeInfo: {
-            serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
+            serializationLibrary: "org.openx.data.jsonserde.JsonSerDe", 
             parameters: {
-                  "field.delim": ","
+              paths: "date,county,state,fips,cases,deaths"
               }
           },
           storedAsSubDirectories: false
@@ -1226,12 +1222,8 @@ export class CovidLakeStack extends cdk.Stack {
         description: "Data on COVID-19 cases from NY Times at US state level",
         parameters: {
           has_encrypted_data: false,
-          classification: "csv", 
-          areColumnsQuoted: "false", 
-          typeOfData: "file", 
-          columnsOrdered: "true", 
-          delimiter: ",", 
-          "skip.header.line.count": "1"
+          classification: "json", 
+          typeOfData: "file"
         },
         storageDescriptor: {
           columns: [
@@ -1247,7 +1239,7 @@ export class CovidLakeStack extends cdk.Stack {
           },
           {
             name: "fips",
-            type: "bigint",
+            type: "string",
             comment: "FIPS code"
           },
           {
@@ -1263,12 +1255,12 @@ export class CovidLakeStack extends cdk.Stack {
           ],
           compressed: false,
           inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
-          location: "s3://covid19-lake/rearc-covid-19-nyt-data-in-usa/us-states",
+          location: "s3://covid19-lake/rearc-covid-19-nyt-data-in-usa/json/us-states",
           outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
           serdeInfo: {
-            serializationLibrary: "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", 
+            serializationLibrary: "org.openx.data.jsonserde.JsonSerDe", 
             parameters: {
-                  "field.delim": ","
+              paths: "date,state,fips,cases,deaths"
               }
           },
           storedAsSubDirectories: false
@@ -1288,7 +1280,7 @@ export class CovidLakeStack extends cdk.Stack {
         parameters: {
           has_encrypted_data: false,
           classification: "json", 
-          typeOfData: "file", 
+          typeOfData: "file"
         },
         storageDescriptor: {
           columns: [
@@ -1397,6 +1389,345 @@ export class CovidLakeStack extends cdk.Stack {
         tableType: "EXTERNAL_TABLE"
       }
     });
+    // #region
+
+    // #region covidcast
+    const covidcast_data_table = new glue.CfnTable(this, 'covidcast_data_table', {
+      databaseName: db.databaseName,
+      catalogId: this.account,
+      tableInput: {
+        name: "covidcast_data",
+        description: "CMU Delphi's COVID-19 Surveillance Data",
+        parameters: {
+          has_encrypted_data: false,
+          classification: "json", 
+          typeOfData: "file", 
+        },
+        storageDescriptor: {
+          columns: [
+            {
+                type: "string", 
+                name: "data_source",
+                comment: "name of upstream data source (e.g., fb-survey, google-survey, ght, quidel, doctor-visits)"
+            }, 
+            {
+                type: "string", 
+                name: "signal",
+                comment: "name of signal derived from upstream data"
+            }, 
+            {
+                type: "string", 
+                name: "geo_type",
+                comment: "spatial resolution of the signal (e.g., county, hrr, msa, dma, state)"
+            }, 
+            {
+                type: "int", 
+                name: "time_value",
+                comment: "time unit (e.g., date) over which underlying events happened"
+            }, 
+            {
+                type: "string", 
+                name: "geo_value",
+                comment: "unique code for each location, depending on geo_type (county -> FIPS 6-4 code, HRR -> HRR number, MSA -> CBSA code, DMA -> DMA code, state -> two-letter state code), or * for all"
+            }, 
+            {
+                type: "int", 
+                name: "direction",
+                comment: "trend classifier (+1 -> increasing, 0 steady or not determined, -1 -> decreasing)"
+            }, 
+            {
+                type: "double", 
+                name: "value",
+                comment: "value (statistic) derived from the underlying data source"
+            }, 
+            {
+                type: "double", 
+                name: "stderr",
+                comment: "standard error of the statistic with respect to its sampling distribution"
+            }, 
+            {
+                type: "double", 
+                name: "sample_size",
+                comment: "number of data points used in computing the statistic"
+            }
+          ],
+          compressed: false,
+          inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
+          location: "s3://covid19-lake/covidcast/json/data/",
+          outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
+          serdeInfo: {
+            serializationLibrary: "org.openx.data.jsonserde.JsonSerDe", 
+            parameters: {
+              paths: "data_source,direction,geo_type,geo_value,sample_size,signal,stderr,time_value,value"
+              }
+          },
+          storedAsSubDirectories: false
+        },
+        tableType: "EXTERNAL_TABLE"
+      }
+    });
+
+    const covidcast_meta_table = new glue.CfnTable(this, 'covidcast_meta_table', {
+      databaseName: db.databaseName,
+      catalogId: this.account,
+      tableInput: {
+        name: "covidcast_metadata",
+        description: "CMU Delphi's COVID-19 Surveillance Metadata",
+        parameters: {
+          has_encrypted_data: false,
+          classification: "json", 
+          typeOfData: "file", 
+        },
+        storageDescriptor: {
+          columns: [
+            {
+              type: "string", 
+              name: "data_source",
+              comment: "name of upstream data source (e.g., fb-survey, google-survey, ght, quidel, doctor-visits)"
+            }, 
+            {
+                type: "string", 
+                name: "signal",
+                comment: "name of signal derived from upstream data"
+            }, 
+            {
+                type: "string", 
+                name: "time_type",
+                comment: "temporal resolution of the signal (e.g., day, week)"
+            }, 
+            {
+                type: "string", 
+                name: "geo_type",
+                comment: "geographic resolution (e.g. county, hrr, msa, dma, state)"
+            }, 
+            {
+                type: "int", 
+                name: "min_time",
+                comment: "minimum time (e.g., 20200406)"
+            }, 
+            {
+                type: "int", 
+                name: "max_time",
+                comment: "maximum time (e.g., 20200413)"
+            }, 
+            {
+                type: "int", 
+                name: "num_locations"
+            }, 
+            {
+                type: "double", 
+                name: "min_value"
+            }, 
+            {
+                type: "double", 
+                name: "max_value"
+            }, 
+            {
+                type: "double", 
+                name: "mean_value"
+            }, 
+            {
+                type: "double", 
+                name: "stdev_value"
+            }
+          ],
+          compressed: false,
+          inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
+          location: "s3://covid19-lake/covidcast/json/metadata/",
+          outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
+          serdeInfo: {
+            serializationLibrary: "org.openx.data.jsonserde.JsonSerDe", 
+            parameters: {
+              paths: "data_source,geo_type,max_time,max_value,mean_value,min_time,min_value,num_locations,signal,stdev_value,time_type"
+              }
+          },
+          storedAsSubDirectories: false
+        },
+        tableType: "EXTERNAL_TABLE"
+      }
+    });
+    // #region
+    
+    // #region safegraph census
+    /*
+    const safegraph_census_cbg_geo_table = new glue.CfnTable(this, 'safegraph_census_cbg_geo_table', {
+      databaseName: db.databaseName,
+      catalogId: this.account,
+      tableInput: {
+        name: "safegraph_census_cbg_geographic",
+        description: "Census data containing location and amount land/water for each Census Block Group.  Sourced from Safegraph. https://www.safegraph.com/blog/beginners-guide-to-census",
+        parameters: {
+          has_encrypted_data: false,
+          classification: "json", 
+          typeOfData: "file", 
+        },
+        storageDescriptor: {
+          columns: [  
+          {
+              name: "census_block_group",
+              type: "string", 
+              comment: "Census Block Group id"
+          }, 
+          {
+              name: "amount_land",
+              type: "bigint", 
+              comment: "amount of land"
+          }, 
+          {
+              name: "amount_water",
+              type: "bigint", 
+              comment: "amount of water"
+          }, 
+          {
+              name: "latitude",
+              type: "double"
+          }, 
+          {
+              name: "longtitude",
+              type: "double"
+          }
+          ],
+          compressed: false,
+          inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
+          location: "s3://covid19-lake/safegraph-open-census-data/json/metadata/cbg_geographic_data/",
+          outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
+          serdeInfo: {
+            serializationLibrary: "org.openx.data.jsonserde.JsonSerDe", 
+            parameters: {
+              paths: "census_block_group,amount_land,amount_water,latitude,longtitude"
+              }
+          },
+          storedAsSubDirectories: false
+        },
+        tableType: "EXTERNAL_TABLE"
+      }
+    });
+    
+    const safegraph_census_cbg_fips_table = new glue.CfnTable(this, 'safegraph_census_cbg_fips_table', {
+      databaseName: db.databaseName,
+      catalogId: this.account,
+      tableInput: {
+        name: "safegraph_census_cbg_fips_codes",
+        description: "Census data containing fips codes for each location.  Sourced from Safegraph. https://www.safegraph.com/blog/beginners-guide-to-census",
+        parameters: {
+          has_encrypted_data: false,
+          classification: "json", 
+          typeOfData: "file", 
+        },
+        storageDescriptor: {
+          columns: [  
+          {
+            name: "state",
+            type: "string", 
+            comment: "US State"
+          }, 
+          {
+            name: "state_fips",
+            type: "string", 
+            comment: "US State fips code"
+          }, 
+          {
+            name: "county_fips",
+            type: "string", 
+            comment: "US Country fips code"
+          }, 
+          {
+            name: "county",
+            type: "string", 
+            comment: "US County fips code"
+          }, 
+          {
+            name: "class_code",
+            type: "string"
+          }
+          ],
+          compressed: false,
+          inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
+          location: "s3://covid19-lake/safegraph-open-census-data/json/metadata/cbg_fips_codes/",
+          outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
+          serdeInfo: {
+            serializationLibrary: "org.openx.data.jsonserde.JsonSerDe", 
+            parameters: {
+              paths: "state,state_fips,county_fips,county,class_code"
+              }
+          },
+          storedAsSubDirectories: false
+        },
+        tableType: "EXTERNAL_TABLE"
+      }
+    });
+
+    const safegraph_census_cbg_field_descriptions_table = new glue.CfnTable(this, 'safegraph_census_cbg_field_descriptions_table', {
+      databaseName: db.databaseName,
+      catalogId: this.account,
+      tableInput: {
+        name: "safegraph_census_cbg_field_descriptions",
+        description: "Census data containing descriptions of the various fields used in the census data.  Sourced from Safegraph. https://www.safegraph.com/blog/beginners-guide-to-census",
+        parameters: {
+          has_encrypted_data: false,
+          classification: "json", 
+          typeOfData: "file", 
+        },
+        storageDescriptor: {
+          columns: [  
+          {
+            name: "table_id",
+            type: "string", 
+            comment: "information about what type of data the field represents.  see link in the table description"
+          }, 
+          {
+            name: "field_full_name",
+            type: "string", 
+            comment: "full name of the field"
+          }, 
+          {
+            name: "field_level_1",
+            type: "string"
+          }, 
+          {
+            name: "field_level_2",
+            type: "string"
+          }, 
+          {
+            name: "field_level_3",
+            type: "string"
+          }, 
+          {
+            name: "field_level_4",
+            type: "string"
+          }, 
+          {
+            name: "field_level_5",
+            type: "string"
+          }, 
+          {
+            name: "field_level_6",
+            type: "string"
+          }, 
+          {
+            name: "field_level_7",
+            type: "string"
+          }, 
+          {
+            name: "field_level_8",
+            type: "string"
+          }
+          ],
+          compressed: false,
+          inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
+          location: "s3://covid19-lake/safegraph-open-census-data/json/metadata/cbg_field_descriptions/",
+          outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
+          serdeInfo: {
+            serializationLibrary: "org.openx.data.jsonserde.JsonSerDe", 
+            parameters: {
+              paths: "table_id,field_full_name,field_level_1,field_level_2,field_level_3,field_level_4,field_level_5,field_level_6,field_level_7,field_level_8"
+              }
+          },
+          storedAsSubDirectories: false
+        },
+        tableType: "EXTERNAL_TABLE"
+      }
+    });*/
     // #region
   }
 }
