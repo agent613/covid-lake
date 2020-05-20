@@ -79,7 +79,7 @@ export function create(stack:cdk.Stack, dbName:string, account:string) {
             ],
             compressed: false,
             inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
-            location: "s3://covid19-lake/enigma-jhu/json",
+            location: "s3://covid19-lake/archived/enigma-jhu/json",
             outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
             serdeInfo: {
             parameters: {
@@ -189,7 +189,7 @@ export function create(stack:cdk.Stack, dbName:string, account:string) {
             ],
             compressed: false,
             inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
-            location: "s3://covid19-lake/enigma-jhu-timeseries/json/",
+            location: "s3://covid19-lake/archived/enigma-jhu-timeseries/json/",
             outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
             serdeInfo: {
             parameters: {
@@ -284,7 +284,7 @@ export function create(stack:cdk.Stack, dbName:string, account:string) {
             ],
             compressed: false,
             inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
-            location: "s3://covid19-lake/tableau-jhu/json/",
+            location: "s3://covid19-lake/archived/tableau-jhu/json/",
             outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
             serdeInfo: {
             parameters: {
@@ -298,17 +298,4 @@ export function create(stack:cdk.Stack, dbName:string, account:string) {
         }
     });
 
-    /*
-    new glue.CfnCrawler(this, 'jhu-crawler', {
-        name: 'covid-enigma-jhu-crawler',
-        databaseName: dbName,
-        role: role.roleArn,
-        targets: {
-        catalogTargets: [{databaseName: db.databaseName, tables: ['enigma_jhu']}]
-        },
-        schedule: {scheduleExpression: 'cron(5 * * * ? *)'},
-        schemaChangePolicy: {deleteBehavior: "LOG"},
-        configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}"
-    }).addDependsOn(jhu_cons_table);
-    */
 }
