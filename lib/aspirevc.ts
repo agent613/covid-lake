@@ -7,7 +7,7 @@ export function create(stack:cdk.Stack, dbName:string, account:string) {
         catalogId: account,
         tableInput: {
         name: "aspirevc_crowd_tracing",
-        description: "",
+        description: "Contact Tracing data from AspireVC",
         parameters: {
             has_encrypted_data: false,
             classification: "json", 
@@ -17,91 +17,113 @@ export function create(stack:cdk.Stack, dbName:string, account:string) {
             columns: [
                 {
                     name: "scandate",
-                    type: "string"
+                    type: "string",
+                    comment: "Date that the scan occurred"
                 },
                 {
                     name: "scannerdeviceid",
-                    type: "string"
+                    type: "string",
+                    comment: "Unique Tokenized identifier of kiosk device"
                 },
                 {
                     name: "scannerdevice_zipcode",
-                    type: "string"
+                    type: "string",
+                    comment: "ZIP Code of Device Location"
                 },
                 {
                     name: "location_maxcapacity",
-                    type: "bigint"
+                    type: "bigint",
+                    comment: "Total number of people they can hold"
                 },
                 {
                     name: "location_capacity_enforcedlimit",
-                    type: "bigint"
+                    type: "bigint",
+                    comment: "Government enforced limit %"
                 },
                 {
                     name: "location_op_hours",
-                    type: "string"
+                    type: "string",
+                    comment: "Operating hours of device location"
                 },
                 {
                     name: "userdeviceid",
-                    type: "string"
+                    type: "string",
+                    comment: "Unique Tokenized identifier of smart phone"
                 },
                 {
                     name: "type_of_scan",
-                    type: "string"
+                    type: "string",
+                    comment: "Checkin or Checkout"
                 },
                 {
                     name: "userid",
-                    type: "string"
+                    type: "string",
+                    comment: "Unique Tokenized identifier of user"
                 },
                 {
                     name: "duration",
-                    type: "bigint"
+                    type: "bigint",
+                    comment: "Time in seconds for how long it took the user to complete the survey"
                 },
                 {
                     name: "risklevel",
-                    type: "string"
+                    type: "string",
+                    comment: "Classification determined by the Go Pass system"
                 },
                 {
                     name: "accesslevel",
-                    type: "string"
+                    type: "string",
+                    comment: "The type of door being entered. 'Public' or 'Private'"
                 },
                 {
                     name: "readtype",
-                    type: "string"
+                    type: "string",
+                    comment: "Device type used.  'Gate' or 'Personal' (Gate = Kiosk; Personal = Smart Phone) "
                 },
                 {
                     name: "temp",
-                    type: "double"
+                    type: "double",
+                    comment: "Temperature of user in F"
                 },
                 {
                     name: "o2",
-                    type: "bigint"
+                    type: "bigint",
+                    comment: "O2 level of user"
                 },
                 {
                     name: "symptoms",
-                    type: "boolean"
+                    type: "boolean",
+                    comment: "Past 2 weeks, have you had any of the following symptoms: shortness of breath, fever, loss of taste or smell, new cough?"
                 },
                 {
                     name: "diagnosed",
-                    type: "boolean"
+                    type: "boolean",
+                    comment: "Past 2 weeks, have you been diagnosed with COVID or are waiting for COVID test results?"
                 },
                 {
                     name: "contact",
-                    type: "boolean"
+                    type: "boolean",
+                    comment: "Past 2 weeks, have you been in contact with anyone who has been diagnosed with COVID or is waiting for COVID test results?"
                 },
                 {
                     name: "near",
-                    type: "boolean"
+                    type: "boolean",
+                    comment: "Past 2 weeks, have you been near anyone with the following symptoms: shortness of breath, fever, loss of taste or smell, new cough?"
                 },
                 {
                     name: "m_score",
-                    type: "double"
+                    type: "double",
+                    comment: "User's mask usage score"
                 },
                 {
                     name: "s_score",
-                    type: "double"
+                    type: "double",
+                    comment: "User's social distancing score"
                 },
                 {
                     name: "result",
-                    type: "string"
+                    type: "string",
+                    comment: "Result of the scan.  'Approved' or 'Declined'"
                 }
             ],
             compressed: false,
