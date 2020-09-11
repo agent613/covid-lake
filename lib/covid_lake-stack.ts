@@ -14,7 +14,8 @@ import {create as prediction_models} from './prediction_models';
 import {create as tableau} from './tableau';
 import {create as rearc_world} from './rearc_world';
 import {create as aspirevc} from './aspirevc';
-import {create as enigma_agg} from './enigma-agg' 
+import {create as enigma_agg} from './enigma-agg'; 
+import {create as uk} from './uk';
 
 export class CovidLakeStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
@@ -38,7 +39,7 @@ export class CovidLakeStack extends cdk.Stack {
     // #endregion
 
 
-    const dataSets = [jhu, allen, covid_testing, static_data, nytimes, beds, covidcast, knowledge_graph, prediction_models, tableau, rearc_world, aspirevc, enigma_agg] ;
+    const dataSets = [jhu, allen, covid_testing, static_data, nytimes, beds, covidcast, knowledge_graph, prediction_models, tableau, rearc_world, aspirevc, enigma_agg, uk] ;
     
     dataSets.map(ds => ds(this, db.databaseName, this.account));
 
