@@ -2,12 +2,12 @@ import * as cdk from '@aws-cdk/core';
 import * as glue from '@aws-cdk/aws-glue'; 
 
 export function create(stack:cdk.Stack, dbName:string, account:string) {
-    const cdc_vaccines_phizer = new glue.CfnTable(stack, 'cdc_vaccines_phizer', {
+    const cdc_vaccines_pfizer = new glue.CfnTable(stack, 'cdc_vaccines_pfizer', {
         databaseName: dbName,
         catalogId: account,
         tableInput: {
         name: "cdc_pfizer_vaccine_distribution",
-        description: "Vaccine distribution data by state for the Phizer vaccine, sourced from the CDC.",
+        description: "Vaccine distribution data by state for the Pfizer/BioNTech vaccine, sourced from the CDC.",
         parameters: {
             has_encrypted_data: false,
             classification: "json", 
