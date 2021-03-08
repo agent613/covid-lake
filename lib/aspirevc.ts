@@ -76,7 +76,7 @@ export function create(stack:cdk.Stack, dbName:string, account:string) {
                     comment: "The type of door being entered. 'Public' or 'Private'"
                 },
                 {
-                    name: "readtype",
+                    name: "readingtype",
                     type: "string",
                     comment: "Device type used.  'Gate' or 'Personal' (Gate = Kiosk; Personal = Smart Phone) "
                 },
@@ -128,13 +128,55 @@ export function create(stack:cdk.Stack, dbName:string, account:string) {
             ],
             compressed: false,
             inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
-            location: "s3://covid19-lake/aspirevc_crowd_tracing/json/",
+            location: "s3://covid19-lake/aspirevc_crowd_tracing/json/data",
             outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
             serdeInfo: {
             parameters: {
                 paths: "ACCESSLEVEL,CONTACT,DIAGNOSED,DURATION,LOCATION_CAPACITY_ENFORCEDLIMIT,LOCATION_MAXCAPACITY,LOCATION_OP_HOURS,M_SCORE,NEAR,O2,READTYPE,RESULT,RISKLEVEL,SCANDATE,SCANNERDEVICEID,SCANNERDEVICE_ZIPCODE,SYMPTOMS,S_SCORE,TEMP,TYPE_OF_SCAN,USERDEVICEID,USERID"
             },
             serializationLibrary: "org.openx.data.jsonserde.JsonSerDe"
+            },
+            storedAsSubDirectories: false
+        },
+        tableType: "EXTERNAL_TABLE"
+        }
+    });
+
+    const aspirevc_crowd_tracing_zip = new glue.CfnTable(stack, 'aspirevc_crowd_tracing_zipcode_3digits', {
+        databaseName: dbName,
+        catalogId: account,
+        tableInput: {
+        name: "aspirevc_crowd_tracing_zipcode_3digits",
+        description: "3 digit zip code lookup for AspireVC tracing data",
+        parameters: {
+            has_encrypted_data: false, 
+            typeOfData: "file",
+            'skip.header.line.count': "1",
+		    classification: "csv"
+        },
+        storageDescriptor: {
+            columns: [
+                {
+                    name: "zip",
+                    type: "string",
+                    comment: "3 digit zip"
+                },
+                {
+                    name: "state",
+                    type: "string",
+                    comment: "US Sate"
+                }
+
+            ],
+            compressed: false,
+            inputFormat: "org.apache.hadoop.mapred.TextInputFormat",
+            location: "s3://covid19-lake/aspirevc_crowd_tracing/csv/zip-data/3digits/",
+            outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
+            serdeInfo: {
+                parameters: {
+                    "separatorChar": ","
+                },
+                serializationLibrary: "org.apache.hadoop.hive.serde2.OpenCSVSerde"
             },
             storedAsSubDirectories: false
         },
