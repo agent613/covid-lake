@@ -7,7 +7,7 @@ export function create(stack:cdk.Stack, dbName:string, account:string) {
         catalogId: account,
         tableInput: {
         name: "owid_world_vaccinations",
-        description: "Vaccine distribution data by state for the Phizer vaccine, sourced from the CDC.",
+        description: "Country-by-country data on global COVID-19 vaccinations, sourced from Our World in Data.",
         parameters: {
             has_encrypted_data: false,
             classification: "json", 
