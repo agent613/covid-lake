@@ -26,12 +26,12 @@ export function create(stack:cdk.Stack, dbName:string, account:string) {
 					comment: "Monday of the week in which allocations are provided"
 				},
 				{
-					name: "_1st_dose_allocations",
+					name: "first_dose_allocations",
 					type: "bigint",
 					comment: "allocations for first vaccine dose"
 				},
 				{
-					name: "_2nd_dose_allocations",
+					name: "second_dose_allocations",
 					type: "bigint",
 					comment: "allocations for second vaccine dose"
 				}
@@ -42,7 +42,7 @@ export function create(stack:cdk.Stack, dbName:string, account:string) {
             outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
             serdeInfo: {
             parameters: {
-                paths: "_1st_dose_allocations,_2nd_dose_allocations,jurisdiction,week_of_allocations"
+                paths: "first_dose_allocations,second_dose_allocations,jurisdiction,week_of_allocations"
             },
             serializationLibrary: "org.openx.data.jsonserde.JsonSerDe"
             },
@@ -76,12 +76,12 @@ export function create(stack:cdk.Stack, dbName:string, account:string) {
 					comment: "Monday of the week in which allocations are provided"
 				},
 				{
-					name: "_1st_dose_allocations",
+					name: "first_dose_allocations",
 					type: "bigint",
 					comment: "allocations for first vaccine dose"
 				},
 				{
-					name: "_2nd_dose_allocations",
+					name: "second_dose_allocations",
 					type: "bigint",
 					comment: "allocations for second vaccine dose"
 				}
@@ -92,7 +92,7 @@ export function create(stack:cdk.Stack, dbName:string, account:string) {
             outputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
             serdeInfo: {
             parameters: {
-                paths: "_1st_dose_allocations,_2nd_dose_allocations,jurisdiction,week_of_allocations"
+                paths: "first_dose_allocations,second_dose_allocations,jurisdiction,week_of_allocations"
             },
             serializationLibrary: "org.openx.data.jsonserde.JsonSerDe"
             },
